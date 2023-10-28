@@ -1,2 +1,2 @@
-# clickhouse-orm
+# chorm
 The sane Clickhouse ORM

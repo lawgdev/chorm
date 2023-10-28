@@ -19,8 +19,3 @@ export enum DATA_TYPE {
   Enum8 = "Enum8",
   Enum16 = "Enum16",
 }
-
-export interface ColumnResponse {
-  name: string;
-  type: DATA_TYPE;
-}

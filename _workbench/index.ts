@@ -8,9 +8,19 @@ import * as schemas from "./schemas";
     password: "Ea2ERtJC0_piS",
     schemas: schemas,
     database: "default",
+    debug: true,
   });
 
-  const items = await client.query.logs.findFirst();
+  await client.query.balls.insert({
+    id: "5",
+    cancelled: false,
+  });
 
-  console.log(items);
+  const items = await client.query.balls.findFirst({
+    where: {
+      cancelled: false,
+    },
+  });
+
+  console.log(await items.json());
 })();

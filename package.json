@@ -7,9 +7,11 @@
   "author": "Cody Miller <hello@looskie.com>, Bereket Semagn <semagnbereket@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@clickhouse/client": "^0.2.4"
+    "@clickhouse/client": "^0.2.4",
+    "cli-color": "^2.0.3"
   },
   "devDependencies": {
+    "@types/cli-color": "^2.0.4",
     "@types/node": "^20.8.9",
     "eslint": "^8.52.0",
     "prettier": "^3.0.3",

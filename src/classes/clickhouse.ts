@@ -1,56 +1,46 @@
 import { createClient as internalCHClient } from "@clickhouse/client";
-import { Query } from "./query";
+import { Logger } from "../utils/logger";
 import type { Table } from ".";
+import { Query } from "./query";
 
 type Options<T extends Record<string, object>> = Parameters<
   typeof internalCHClient
 >["0"] & {
   schemas: T;
   pingInterval?: number;
+  debug?: boolean;
 };
 
 export type Client = ReturnType<typeof internalCHClient>;
 
+type Queries<T extends Record<string, Table>> = {
+  [K in keyof T]: Query<T[K]>;
+};
+
 export default class ClickHouse<T extends Record<string, Table>> {
   private readonly client: Client;
   private readonly options: Options<T>;
-  private readonly pingInterval: ReturnType<typeof setInterval>;
 
-  public readonly query: Record<keyof T, Query<T[keyof T]>>;
+  public readonly query: Queries<T>;
 
   constructor(options: Options<T>) {
-    this.client = internalCHClient(options);
+    this.client = internalCHClient({
+      log: { LoggerClass: Logger },
+      ...options,
+    });
     this.options = options;
     this.client.query({
       query: `CREATE DATABASE IF NOT EXISTS ${options.database}`,
     });
 
-    this.query = Object.entries(options.schemas).reduce(
-      (acc, [key, value]) => {
-        return {
-          ...acc,
-          [key]: new Query(this.client, value),
-        };
-      },
-      {} as Record<keyof T, Query<T[keyof T]>>
-    );
+    this.query = Object.entries(options.schemas).reduce((acc, [key, value]) => {
+      return {
+        ...acc,
+        [key]: new Query(this.client, this.options.database, value),
+      };
+    }, {} as Queries<T>);
 
-    this.pingInterval = setInterval(this.ping, options?.pingInterval ?? 10_000);
     this.migrate(options.schemas);
-  }
-
-  private async ping() {
-    try {
-      await this.client.ping();
-    } catch (err) {
-      this.close();
-      throw err;
-    }
-  }
-
-  private async close() {
-    clearInterval(this.pingInterval);
-    return await this.client.close();
   }
 
   private async migrate(schemas: T) {
@@ -62,7 +52,7 @@ export default class ClickHouse<T extends Record<string, Table>> {
       );
 
       const primaryKeyColumn = Object.entries(tableColumns.columns).find(
-        ([_, column]) => column.primaryKey
+        ([_, column]) => column.columnPrimaryKey
       )?.[0];
 
       await this.client.query({

@@ -3,29 +3,32 @@ import type { DATA_TYPE } from "./validation";
 interface ColumnBuilderOptions {
   name: string;
   type: DATA_TYPE;
-  primaryKey?: boolean;
 }
 
-export class ColumnBuilder<T = unknown> {
+export class ColumnBuilder<_T = unknown> {
   public columnName: string;
   public columnType: DATA_TYPE;
-  public primaryKey: boolean = false;
+  public columnPrimaryKey: boolean = false;
 
   constructor(options: ColumnBuilderOptions) {
     this.columnName = options.name;
     this.columnType = options.type;
   }
 
+  default() {
+    return this;
+  }
+
   notNull() {
     return this;
   }
 
-  isPrimaryKey() {
-    this.primaryKey = true;
+  primaryKey() {
+    this.columnPrimaryKey = true;
     return this;
   }
 
   $type<U>() {
-    return this as ColumnBuilder<U>;
+    return this as unknown as ColumnBuilder<U>;
   }
 }

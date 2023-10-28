@@ -5,7 +5,7 @@ interface ProjectMemberRole {
 }
 
 export const logs = table("logs", {
-  id: text("id").notNull().$type<ProjectMemberRole>().isPrimaryKey(),
+  id: text("id").notNull().$type<ProjectMemberRole>().primaryKey(),
 });
 
 export const events = table("events", {

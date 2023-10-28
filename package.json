@@ -1,0 +1,19 @@
+{
+  "name": "clickhouse-orm",
+  "version": "1.0.0",
+  "description": "The sane Clickhouse ORM for TypeScript",
+  "main": "index.js",
+  "repository": "https://github.com/lawgdev/clickhouse-orm.git",
+  "author": "Cody Miller <hello@looskie.com>, Bereket Semagn <semagnbereket@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@clickhouse/client": "^0.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.9",
+    "eslint": "^8.52.0",
+    "prettier": "^3.0.3",
+    "tsx": "^3.14.0",
+    "typescript": "^5.2.2"
+  }
+}

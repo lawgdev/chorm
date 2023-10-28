@@ -65,7 +65,7 @@ export default class ClickHouse<T extends Record<string, Table>> {
         ([_, column]) => column.primaryKey
       )?.[0];
 
-      this.client.query({
+      await this.client.query({
         query: `
         CREATE TABLE IF NOT EXISTS ${this.options.database}.${tableName}
         (

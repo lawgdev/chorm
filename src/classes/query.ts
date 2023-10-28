@@ -1,6 +1,6 @@
-import type { Client } from ".";
+import type { Client, Table } from ".";
 
-export class Query<T extends object> {
+export class Query<T extends Table> {
   private readonly table: T;
   private readonly client: Client;
 
@@ -11,7 +11,7 @@ export class Query<T extends object> {
 
   public async findFirst() {
     return await this.client.query({
-      query: `SELECT * FROM default.test LIMIT 1`,
+      query: `SELECT * FROM default.${this.table} LIMIT 1`,
     });
   }
 

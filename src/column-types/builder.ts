@@ -13,6 +13,11 @@ export class ColumnBuilder<_T = unknown> {
   constructor(options: ColumnBuilderOptions) {
     this.columnName = options.name;
     this.columnType = options.type;
+    this.columnPrimaryKey = options.primaryKey ?? false;
+  }
+
+  default() {
+    return this;
   }
 
   default() {

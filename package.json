@@ -1,7 +1,7 @@
 {
 	"name": "@lawgdev/chorm",
 	"description": "The sane Clickhouse ORM for TypeScript",
-	"version": "1.0.0",
+	"version": "0.0.0",
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"exports": {
@@ -17,7 +17,7 @@
 	"scripts": {
 		"build": "tsup src/index.ts --dts --format esm,cjs",
 		"lint": "prettier --write src",
-		"release": "yarn build && yarn npm publish"
+		"release": "yarn build && npm publish"
 	},
 	"dependencies": {
 		"@clickhouse/client": "^0.2.4",

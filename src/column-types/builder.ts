@@ -9,19 +9,24 @@ interface ColumnBuilderOptions {
 export class ColumnBuilder<T = unknown> {
   public columnName: string;
   public columnType: DATA_TYPE;
-  public primaryKey: boolean = false;
+  public columnPrimaryKey: boolean = false;
 
   constructor(options: ColumnBuilderOptions) {
     this.columnName = options.name;
     this.columnType = options.type;
+    this.columnPrimaryKey = options.primaryKey ?? false;
+  }
+
+  default() {
+    return this;
   }
 
   notNull() {
     return this;
   }
 
-  isPrimaryKey() {
-    this.primaryKey = true;
+  primaryKey() {
+    this.columnPrimaryKey = true;
     return this;
   }
 

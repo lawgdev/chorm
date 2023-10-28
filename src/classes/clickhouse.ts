@@ -62,7 +62,7 @@ export default class ClickHouse<T extends Record<string, Table>> {
       );
 
       const primaryKeyColumn = Object.entries(tableColumns.columns).find(
-        ([_, column]) => column.primaryKey
+        ([_, column]) => column.columnPrimaryKey
       )?.[0];
 
       await this.client.query({

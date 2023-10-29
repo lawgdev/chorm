@@ -47,9 +47,14 @@ export default class ClickHouse<T extends Record<string, Table>> {
     }, {} as Queries<T>);
   }
 
-  public async migrate({ folder }: { folder: string }) {
+  public async migrate({ folder }: { folder?: string } = {}) {
+    const dirname = process.argv[1];
+    if (!dirname) return;
+
+    const migrationsFolder = folder ?? `${path.dirname(dirname)}/migrations`;
+
     this.startMigrations();
-    this.generateMigrations(folder);
+    this.generateMigrations(migrationsFolder);
   }
 
   private async startMigrations() {
@@ -96,13 +101,11 @@ export default class ClickHouse<T extends Record<string, Table>> {
     const migrations: MigrationBase[] = [];
     let files: string[];
 
-    const migrationsFolderPath = path.join(process.cwd(), folder);
-
     try {
       files = fs.readdirSync(folder);
     } catch (e: unknown) {
       if ((e as { code: string })?.code === "ENOENT") {
-        fs.mkdirSync(migrationsFolderPath);
+        fs.mkdirSync(folder);
         files = [];
       } else {
         Logger.error("Error while reading migrations folder", e);
@@ -111,7 +114,7 @@ export default class ClickHouse<T extends Record<string, Table>> {
     }
 
     for (const file of files) {
-      const migrationPath = path.join(migrationsFolderPath, file);
+      const migrationPath = path.join(folder, file);
 
       const migrationContent = fs.readFileSync(migrationPath, "utf-8");
 

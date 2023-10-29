@@ -1,9 +1,9 @@
-import { ColumnBuilder } from '../builder';
-import { DATA_TYPE } from '../validation';
+import { ColumnBuilder } from "../builder";
+import { DATA_TYPE } from "../validation";
 
 export function boolean(name: string) {
-	return new ColumnBuilder({
-		name,
-		type: DATA_TYPE.Boolean,
-	}).$type<boolean>();
+  return new ColumnBuilder({
+    name,
+    type: DATA_TYPE.Boolean,
+  }).$type<boolean>();
 }

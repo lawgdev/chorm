@@ -11,15 +11,15 @@ import * as schemas from "./schemas";
     debug: true,
   });
 
-  await client.query.balls.insert({
+  client.migrate(schemas, "./_workbench/migrations");
+
+  client.query.balls.insert({
     id: "5",
     cancelled: false,
   });
 
   const items = await client.query.balls.findFirst({
-    where: {
-      cancelled: false,
-    },
+    where: ({ eq }) => eq(schemas.balls.columns.id, "5"),
   });
 
   console.log(await items.json());

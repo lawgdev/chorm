@@ -1,48 +1,58 @@
 {
-	"name": "@lawgdev/chorm",
-	"description": "The sane Clickhouse ORM for TypeScript",
-	"version": "0.0.0",
-	"types": "./dist/index.d.ts",
-	"type": "module",
-	"exports": {
-		"import": "./dist/index.js",
-		"require": "./dist/index.cjs"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/lawgdev/chorm.git"
-	},
-	"author": "Cody Miller <hello@looskie.com> (https://looskie.com), Bereket Semagn <semagnbereket@gmail.com> (https://bereket.wtf)",
-	"license": "MIT",
-	"scripts": {
-		"build": "tsup src/index.ts --dts --format esm,cjs",
-		"lint": "prettier --write src",
-		"release": "yarn build && npm publish"
-	},
-	"dependencies": {
-		"@clickhouse/client": "^0.2.4",
-		"cli-color": "^2.0.3",
-		"eslint": "^8.52.0"
-	},
-	"devDependencies": {
-		"@types/cli-color": "^2.0.4",
-		"@types/node": "^20.8.9",
-		"prettier": "^3.0.3",
-		"tsup": "^7.2.0",
-		"tsx": "^3.14.0",
-		"typescript": "^5.2.2"
-	},
-	"bugs": {
-		"url": "https://github.com/lawgdev/chorm/issues"
-	},
-	"homepage": "https://github.com/lawgdev/chorm#readme",
-	"files": [
-		"dist",
-		"package.json"
-	],
-	"keywords": [
-		"clickhouse",
-		"orm",
-		"typescript"
-	]
+  "name": "@lawgdev/chorm",
+  "description": "The sane Clickhouse ORM for TypeScript",
+  "version": "0.0.0",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "bin": {
+    "chorm": "./dist/cli/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lawgdev/chorm.git"
+  },
+  "author": "Cody Miller <hello@looskie.com> (https://looskie.com), Bereket Semagn <semagnbereket@gmail.com> (https://bereket.wtf)",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsup src/index.ts src/cli/index.ts --dts --format esm,cjs",
+    "workbench": "tsx _workbench/index.ts",
+    "lint": "prettier --write src",
+    "release": "yarn build && npm publish",
+    "prettier-write": "prettier --write src"
+  },
+  "dependencies": {
+    "@clickhouse/client": "^0.2.4",
+    "cli-color": "^2.0.3",
+    "commander": "^11.1.0",
+    "enquirer": "^2.4.1",
+    "sqlstring": "^2.3.3",
+    "unique-names-generator": "^4.7.1"
+  },
+  "devDependencies": {
+    "@types/cli-color": "^2.0.4",
+    "@types/node": "^20.8.9",
+    "@types/sqlstring": "^2.3.1",
+    "eslint": "^8.52.0",
+    "prettier": "^3.0.3",
+    "tsup": "^7.2.0",
+    "tsx": "^3.14.0",
+    "typescript": "^5.2.2"
+  },
+  "bugs": {
+    "url": "https://github.com/lawgdev/chorm/issues"
+  },
+  "homepage": "https://github.com/lawgdev/chorm#readme",
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "keywords": [
+    "clickhouse",
+    "orm",
+    "typescript"
+  ]
 }

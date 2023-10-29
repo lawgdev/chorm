@@ -106,6 +106,14 @@ export function not(expression: string) {
   return sql`NOT (${expression})`;
 }
 
+export function and(...expressions: string[]) {
+  return sql`(${expressions.join(" AND ")})`;
+}
+
+export function or(...expressions: string[]) {
+  return sql`(${expressions.join(" OR ")})`;
+}
+
 export function arrayContains<T extends ColumnBuilder = ColumnBuilder>(
   column: T,
   values: ExtractTypeFromColumn<T>[],

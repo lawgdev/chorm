@@ -19,7 +19,7 @@ import * as schemas from "./schemas";
   });
 
   const items = await client.query.balls.findFirst({
-    where: ({ eq }) => eq(schemas.balls.columns.id, "5"),
+    where: ({ eq, and }) => and(eq(schemas.balls.columns.id, "5"), eq(schemas.balls.columns.cancelled, false)),
   });
 
   console.log(await items.json());

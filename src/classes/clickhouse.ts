@@ -171,7 +171,7 @@ export default class ClickHouse<T extends Record<string, Table>> {
     await this.client.ping();
   }
 
-  public async reset() {
+  public async drop() {
     await this.client.query({
       query: `DROP DATABASE IF EXISTS ${this.options.database}`,
     });

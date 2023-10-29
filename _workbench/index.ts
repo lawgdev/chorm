@@ -11,7 +11,7 @@ import * as schemas from "./schemas";
     debug: true,
   });
 
-  client.migrate(schemas, "./_workbench/migrations");
+  client.migrate({ folder: "./_workbench/migrations" });
 
   client.query.balls.insert({
     id: "5",

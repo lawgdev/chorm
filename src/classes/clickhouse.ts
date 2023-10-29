@@ -24,7 +24,7 @@ type Queries<T extends Record<string, Table>> = {
 };
 
 export default class ClickHouse<T extends Record<string, Table>> {
-  private readonly client: Client;
+  public readonly client: Client;
   private readonly options: Options<T>;
 
   public readonly query: Queries<T>;
@@ -47,34 +47,34 @@ export default class ClickHouse<T extends Record<string, Table>> {
     }, {} as Queries<T>);
   }
 
-  public async migrate(schemas: T, migrationsFolder: string) {
-    // this.startMigrations();
-    this.generateMigrations(migrationsFolder);
-
-    for (const [tableName, tableColumns] of Object.entries(schemas)) {
-      const columns = Object.entries(tableColumns.columns).map(([columnName, column]) => {
-        return `${columnName} ${column.columnType}`;
-      });
-
-      const primaryKeyColumn = Object.entries(tableColumns.columns).find(
-        ([_, column]) => column.columnPrimaryKey,
-      )?.[0];
-
-      await this.client.query({
-        query: `
-        CREATE TABLE IF NOT EXISTS ${this.options.database}.${tableName}
-        (
-          ${columns.join(",\n")}
-        )
-        ENGINE = MergeTree()
-        ${primaryKeyColumn ? `PRIMARY KEY ${primaryKeyColumn}` : ""}
-        `,
-      });
-    }
+  public async migrate({ folder }: { folder: string }) {
+    this.startMigrations();
+    this.generateMigrations(folder);
   }
 
   private async startMigrations() {
     try {
+      for (const [tableName, tableColumns] of Object.entries(this.options.schemas)) {
+        const columns = Object.entries(tableColumns.columns).map(([columnName, column]) => {
+          return `${columnName} ${column.columnType}`;
+        });
+
+        const primaryKeyColumn = Object.entries(tableColumns.columns).find(
+          ([_, column]) => column.columnPrimaryKey,
+        )?.[0];
+
+        await this.client.query({
+          query: `
+          CREATE TABLE IF NOT EXISTS ${this.options.database}.${tableName}
+          (
+            ${columns.join(",\n")}
+          )
+          ENGINE = MergeTree()
+          ${primaryKeyColumn ? `PRIMARY KEY ${primaryKeyColumn}` : ""}
+          `,
+        });
+      }
+
       await this.client.exec({
         query: `CREATE TABLE IF NOT EXISTS _migrations (
           uid UUID DEFAULT generateUUIDv4(), 
@@ -92,14 +92,14 @@ export default class ClickHouse<T extends Record<string, Table>> {
     }
   }
 
-  private async getMigrations(migrationsFolder: string): Promise<MigrationBase[]> {
+  private async getMigrations(folder: string): Promise<MigrationBase[]> {
     const migrations: MigrationBase[] = [];
     let files: string[];
 
-    const migrationsFolderPath = path.join(process.cwd(), migrationsFolder);
+    const migrationsFolderPath = path.join(process.cwd(), folder);
 
     try {
-      files = fs.readdirSync(migrationsFolder);
+      files = fs.readdirSync(folder);
     } catch (e: unknown) {
       if ((e as { code: string })?.code === "ENOENT") {
         fs.mkdirSync(migrationsFolderPath);
@@ -134,39 +134,30 @@ export default class ClickHouse<T extends Record<string, Table>> {
     return migrations.sort((m1, m2) => m1.version - m2.version);
   }
 
-  private async generateMigrations(migrationsFolder: string) {
-    const migrations = await this.getMigrations(migrationsFolder);
-    let lastMigration = migrations[migrations.length - 1];
-
-    if (!lastMigration) {
-      lastMigration = { version: 0, filename: "", checksum: 0, content: "" };
-    }
+  private async generateMigrations(folder: string) {
+    const migrations = await this.getMigrations(folder);
+    const lastMigration = migrations[migrations.length - 1];
 
     const newMigrationName = uniqueNamesGenerator({
       dictionaries: [adjectives, colors, animals],
-      separator: "_",
-      length: 3,
     });
 
-    const newMigrationVersion = String(lastMigration.version + 1).padStart(4, "0");
+    const newMigrationVersion = lastMigration
+      ? String(lastMigration.version + 1).padStart(4, "0")
+      : "0000";
 
     const newMigrationContent = ``;
 
-    this.createMigrationFile(
-      migrationsFolder,
-      newMigrationVersion,
-      newMigrationName,
-      newMigrationContent,
-    );
+    this.createMigrationFile(folder, newMigrationVersion, newMigrationName, newMigrationContent);
   }
 
   private createMigrationFile(
-    migrationsFolder: string,
+    folder: string,
     newMigrationVersion: string,
     newMigrationName: string,
     migrationContent: string,
   ) {
-    const migrationFilePath = `${migrationsFolder}/${newMigrationVersion}_${newMigrationName}.sql`;
+    const migrationFilePath = `${folder}/${newMigrationVersion}_${newMigrationName}.sql`;
 
     fs.writeFileSync(migrationFilePath, migrationContent);
 
@@ -174,6 +165,16 @@ export default class ClickHouse<T extends Record<string, Table>> {
       "Migration file created",
       `A new migration file has been created at ${migrationFilePath}`,
     );
+  }
+
+  public async ping() {
+    await this.client.ping();
+  }
+
+  public async reset() {
+    await this.client.query({
+      query: `DROP DATABASE IF EXISTS ${this.options.database}`,
+    });
   }
 
   public async close() {

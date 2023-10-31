@@ -1,7 +1,6 @@
 import { ClickHouseLogLevel, createClient as internalCHClient } from "@clickhouse/client";
 import { Logger } from "../utils/logger";
 import { Query } from "./query";
-import type { ClickHouseEngine } from "../types/engine";
 import fs from "fs";
 import type { MigrationBase } from "../types";
 import { adjectives, animals, colors, uniqueNamesGenerator } from "unique-names-generator";
@@ -11,7 +10,6 @@ import path from "path";
 type Options<T extends Record<string, Record<string, unknown>>> = Parameters<
   typeof internalCHClient
 >["0"] & {
-  engine?: ClickHouseEngine;
   schemas: T;
   pingInterval?: number;
   debug?: boolean;

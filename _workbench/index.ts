@@ -1,4 +1,5 @@
 import ClickHouse from "../src/classes/clickhouse";
+import { eq } from "../src/expressions/conditions";
 import * as schemas from "./schemas";
 
 (async () => {
@@ -11,16 +12,29 @@ import * as schemas from "./schemas";
     debug: true,
   });
 
-  client.migrate({ folder: "./_workbench/migrations" });
+  // client.migrate({ folder: "./_workbench/migrations" });
 
   client.query.balls.insert({
     id: "5",
     cancelled: false,
   });
 
-  const items = await client.query.balls.findFirst({
-    where: ({ eq, and }) => and(eq(schemas.balls.columns.id, "5"), eq(schemas.balls.columns.cancelled, false)),
+  const item = await client.query.balls.findFirst({
+    where: eq(schemas.balls.columns.id, "true"),
   });
 
-  console.log(await items.json());
+  const foundItemId = item?.id;
+
+  const items = await client.query.balls.findMany({
+    where: eq(schemas.balls.columns.cancelled, false),
+  });
+
+  const foundItemsId = items.map(i => i.id);
+  console.log(foundItemsId);
+
+  const deleteFirstItem = await client.query.balls.delete({
+    where: eq(schemas.balls.columns.id, foundItemId!),
+  });
+
+  console.log(deleteFirstItem);
 })();

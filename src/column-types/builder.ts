@@ -5,22 +5,27 @@ type ColumnBuilderOptions = {
   type: DATA_TYPE;
 };
 
-export class ColumnBuilder<_T = unknown> {
+export class ColumnBuilder<T = unknown, R extends boolean = false> {
   public columnName: string;
   public columnType: DATA_TYPE;
   public columnPrimaryKey = false;
+  public columnRequired = false;
+
+  public defaultValue: T | null = null;
 
   constructor(options: ColumnBuilderOptions) {
     this.columnName = options.name;
     this.columnType = options.type;
   }
 
-  default() {
+  default(value: T) {
+    this.defaultValue = value;
     return this;
   }
 
   notNull() {
-    return this;
+    this.columnRequired = true;
+    return this as ColumnBuilder<T, true>;
   }
 
   primaryKey() {
@@ -29,6 +34,6 @@ export class ColumnBuilder<_T = unknown> {
   }
 
   $type<U>() {
-    return this as unknown as ColumnBuilder<U>;
+    return this as unknown as ColumnBuilder<U, R>;
   }
 }

@@ -302,17 +302,17 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@clickhouse/client-common@0.2.4":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@clickhouse/client-common/-/client-common-0.2.4.tgz#49c5fbfea01d95bc8af1bb5a322ab27cf25bcd01"
-  integrity sha512-XVmxvU0kACANTmQSfdYCIA/reDkH5353AOvfwKRXMNwag8pX2IIoO8zoJjZvtfbGPy5LoI+UKj3aoiKSl8Z8qA==
+"@clickhouse/client-common@0.2.5":
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client-common/-/client-common-0.2.5.tgz#ec2fbaf826f5ac4217558d32a2afb84fc71211b3"
+  integrity sha512-V36SiMSbI4XyK3yzXfl5wpSnTEVNvz43l1WhQJZD6/9OMRTk0D8zi6dslR3ya+SCT+a9AXVCxxVBrcC4rAd6gg==
 
-"@clickhouse/client@^0.2.4":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@clickhouse/client/-/client-0.2.4.tgz#bd17712ab27dc5e8a161a43f6e1b5489cbb09066"
-  integrity sha512-qeKYMHoNxRG8xQ4CPEnPcAbreivhWm3QTw9v5BkovS9j/mnt9NcUzWpmdZTsL/vTl63fSTXVkiA9/QY++r3/qQ==
+"@clickhouse/client@^0.2.5":
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/@clickhouse/client/-/client-0.2.5.tgz#2218e81a6ab7de2184a4293da2cd1f5cde3158bc"
+  integrity sha512-eYrYA7lMZ/8PyYcw3G+q1ki9bw0+Z9+NaNwi3b2uFg08F1Wr0Ig4aj3dAhb/mJ+8/2JgSW5FDOrw6t7+8b7Hnw==
   dependencies:
-    "@clickhouse/client-common" "0.2.4"
+    "@clickhouse/client-common" "0.2.5"
 
 "@esbuild/android-arm64@0.18.20":
   version "0.18.20"

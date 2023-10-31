@@ -26,7 +26,7 @@
     "test": "jest --forceExit"
   },
   "dependencies": {
-    "@clickhouse/client": "^0.2.4",
+    "@clickhouse/client": "^0.2.5",
     "cli-color": "^2.0.3",
     "commander": "^11.1.0",
     "enquirer": "^2.4.1",

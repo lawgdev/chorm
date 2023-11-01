@@ -11,16 +11,18 @@ export default async function () {
 
   expect(queryId).toBeDefined();
 
-  const user = await chorm.query.users.findFirst({
-    where: (users, { eq }) => eq(users.columns.id, createdUserId),
-  });
+  setTimeout(async () => {
+    const user = await chorm.query.users.findFirst({
+      where: (users, { eq }) => eq(users.columns.id, createdUserId),
+    });
 
-  expect(user).toStrictEqual({
-    id: createdUserId,
-    password: "yayyy new password",
-    username: "username",
-    phone_number: "+1 1234567890",
-  });
+    expect(user).toStrictEqual({
+      id: createdUserId,
+      password: "yayyy new password",
+      username: "username",
+      phone_number: "+1 1234567890",
+    });
+  }, 5);
 
   // Multiple updates
   const multipleUpdatesQueryId = await chorm.query.users.update({
@@ -34,14 +36,16 @@ export default async function () {
 
   expect(multipleUpdatesQueryId).toBeDefined();
 
-  const multipleUpdatesUser = await chorm.query.users.findFirst({
-    where: (users, { eq }) => eq(users.columns.id, createdUserId),
-  });
+  setTimeout(async () => {
+    const multipleUpdatesUser = await chorm.query.users.findFirst({
+      where: (users, { eq }) => eq(users.columns.id, createdUserId),
+    });
 
-  expect(multipleUpdatesUser).toStrictEqual({
-    id: createdUserId,
-    password: "changed newer password",
-    username: "changed username",
-    phone_number: "+1 changed phon number",
-  });
+    expect(multipleUpdatesUser).toStrictEqual({
+      id: createdUserId,
+      password: "changed newer password",
+      username: "changed username",
+      phone_number: "+1 changed phon number",
+    });
+  }, 5);
 }

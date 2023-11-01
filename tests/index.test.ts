@@ -4,6 +4,7 @@ import { DATA_TYPE } from "../src/schema/validation";
 import checkProperties from "./client/checkProperties";
 import defined from "./client/defined";
 import createUser from "./query/createUser";
+import deleteUser from "./query/deleteUser";
 import getUser from "./query/getUser";
 import updateUser from "./query/updateUser";
 
@@ -39,9 +40,9 @@ export let chorm: ClickHouse<typeof testSchemas>;
 
 beforeAll(async () => {
   chorm = new ClickHouse({
-    host: "https://lhe6wu5y42.us-east-2.aws.clickhouse.cloud:8443",
+    host: "http://localhost:8123",
     username: "default",
-    password: "Ea2ERtJC0_piS",
+    password: "password",
     schemas: testSchemas,
     database: "default",
     debug: true,
@@ -63,5 +64,7 @@ describe("Test chorm", () => {
   it("should create a user", createUser);
   it("should fetch a user", getUser);
   it("should update user", updateUser);
-  //it("should delete user", deleteUser);
+  it("should delete user", deleteUser);
+
+  /* Complex Query */
 });

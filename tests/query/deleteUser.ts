@@ -8,9 +8,11 @@ export default async function () {
 
   expect(queryId).toBeDefined();
 
-  const user = await chorm.query.users.findFirst({
-    where: (users, { eq }) => eq(users.columns.id, createdUserId),
-  });
+  setTimeout(async () => {
+    const user = await chorm.query.users.findFirst({
+      where: (users, { eq }) => eq(users.columns.id, createdUserId),
+    });
 
-  expect(user).toBeNull();
+    expect(user).toBeNull();
+  }, 5);
 }

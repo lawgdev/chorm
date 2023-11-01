@@ -32,7 +32,8 @@ type ExtractPropsFromTable<T extends Table> = {
 };
 
 type GenericParams<T extends Table> = {
-  where: (table: T, conditions: AllExpressions) => string;
+  where?: (table: T, conditions: AllExpressions) => string;
+  orderBy?: (table: T, conditions: AllExpressions) => string;
 };
 
 export class Query<T extends Table> {
@@ -47,26 +48,43 @@ export class Query<T extends Table> {
   }
 
   public async findFirst(params: GenericParams<T>) {
-    const query = await this.client.query({
-      query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${combineExpression(
+    let query;
+
+    if (params.where) {
+      query = `SELECT * FROM ${this.database}.${this.table.name} WHERE ${combineExpression(
         params.where(this.table, conditions),
-      )} LIMIT 1`,
+      )} LIMIT 1`;
+    } else {
+      query = `SELECT * FROM ${this.database}.${this.table.name} LIMIT 1`;
+    }
+
+    const queriedData = await this.client.query({
+      query,
     });
 
-    const json = await query.json<ClickhouseJSONResponse<T>>();
+    const json = await queriedData.json<ClickhouseJSONResponse<T>>();
 
     return json.data?.[0] ?? null;
   }
 
   public async findMany(params: GenericParams<T>) {
-    const query = await this.client.query({
-      query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${combineExpression(
-        params.where(this.table, conditions),
-      )}`,
+    const validation = {
+      where: params.where ? `WHERE ${combineExpression(params.where(this.table, conditions))}` : "",
+      orderBy: params.orderBy
+        ? `ORDER BY ${combineExpression(params.orderBy(this.table, conditions))}`
+        : "",
+    };
+
+    const query = `SELECT * FROM ${this.database}.${this.table.name} ${Object.values(validation)
+      .join(" ")
+      .trim()}`;
+
+    const queriedData = await this.client.query({
+      query,
       format: "JSON",
     });
 
-    const json = await query.json<ClickhouseJSONResponse<T>>();
+    const json = await queriedData.json<ClickhouseJSONResponse<T>>();
 
     return json.data;
   }
@@ -102,13 +120,21 @@ export class Query<T extends Table> {
 
   // Todo: allow user to specify if they want to do a "lightweight" or a "hard" delete
   public async delete(params: GenericParams<T>) {
-    const query = await this.client.query({
-      query: `ALTER TABLE ${this.database}.${this.table.name} DELETE WHERE ${combineExpression(
+    let query;
+
+    if (params.where) {
+      query = `ALTER TABLE ${this.database}.${this.table.name} DELETE WHERE ${combineExpression(
         params.where(this.table, conditions),
-      )}`,
+      )}`;
+    } else {
+      query = `ALTER TABLE ${this.database}.${this.table.name} DELETE`;
+    }
+
+    const queriedData = await this.client.query({
+      query,
     });
 
-    return query.query_id;
+    return queriedData.query_id;
   }
 
   public async update(
@@ -116,12 +142,12 @@ export class Query<T extends Table> {
       data: Partial<ExtractPropsFromTable<T>>;
     },
   ) {
+    if (!params.where) return;
+
     const updateExpression = Object.entries(params.data).map(([key, value]) => {
       const parsedValue = this.table.columns[key]?.sqlParser(value) ?? value;
       return `${key} = ${parsedValue}`;
     });
-
-    console.log(updateExpression);
 
     const query = await this.client.query({
       query: `ALTER TABLE ${this.database}.${
@@ -130,8 +156,6 @@ export class Query<T extends Table> {
         params.where(this.table, conditions),
       )}`,
     });
-
-    console.log(query);
 
     return query.query_id;
   }

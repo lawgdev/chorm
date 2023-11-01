@@ -8,7 +8,7 @@ export default async function () {
     where: eq(testSchemas.users.columns.id, createdUserId),
   });
 
-  expect(user).toBe({
+  expect(user).toStrictEqual({
     id: createdUserId,
     password: "password",
     username: "username",

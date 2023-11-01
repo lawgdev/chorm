@@ -1,10 +1,16 @@
 import { boolean, clickhouseEnum, date, float, integer, table, text, uuid } from "../src";
 import ClickHouse from "../src/classes/clickhouse";
-import { DATA_TYPE } from "../src/column-types/validation";
+import { DATA_TYPE } from "../src/schema/validation";
 import checkProperties from "./client/checkProperties";
 import defined from "./client/defined";
 import createUser from "./query/createUser";
 import getUser from "./query/getUser";
+
+enum Test {
+  A,
+  B,
+  C,
+}
 
 export const testSchemas = {
   users: table("users", {
@@ -18,7 +24,10 @@ export const testSchemas = {
     customer_name: text("customer_name").notNull(),
     is_admin: boolean("is_admin").notNull().default(false),
     created_at: date("created_at", { type: DATA_TYPE.Date }).notNull(),
-    random_enum: clickhouseEnum("random_enum", { type: DATA_TYPE.Enum8 }),
+    random_enum: clickhouseEnum("random_enum", {
+      type: DATA_TYPE.Enum8,
+      value: Test,
+    }),
     pi: float("pi", { type: DATA_TYPE.Float32 }).notNull().default(3.14),
     card_number: integer("card_number", { type: DATA_TYPE.Int32 }).notNull(),
     uuid: uuid("uuid").notNull(),
@@ -36,6 +45,8 @@ beforeAll(async () => {
     database: "default",
     debug: true,
   });
+
+  await chorm.migrate();
 });
 
 afterAll(async () => {

@@ -12,29 +12,34 @@ import * as schemas from "./schemas";
     debug: true,
   });
 
-  // client.migrate({ folder: "./_workbench/migrations" });
+  await client.migrate({ folder: "./_workbench/migrations" });
 
-  client.query.balls.insert({
-    id: "5",
-    cancelled: false,
-  });
-
-  const item = await client.query.balls.findFirst({
-    where: eq(schemas.balls.columns.id, "true"),
-  });
-
-  const foundItemId = item?.id;
-
-  const items = await client.query.balls.findMany({
+  const items = await client.query.balls.findFirst({
     where: eq(schemas.balls.columns.cancelled, false),
   });
 
-  const foundItemsId = items.map(i => i.id);
-  console.log(foundItemsId);
+  const items2 = (
+    await client.query.balls.insert({
+      id: "1",
+      cancelled: true,
+    })
+  ).returning();
 
-  const deleteFirstItem = await client.query.balls.delete({
-    where: eq(schemas.balls.columns.id, foundItemId!),
-  });
+  console.log(
+    await client.query.balls.findFirst({
+      where: eq(schemas.balls.columns.id, "1"),
+    }),
+  );
 
-  console.log(deleteFirstItem);
+  console.log(
+    await client.query.balls.findFirst({
+      where: eq(schemas.balls.columns.cancelled, false),
+    }),
+  );
+
+  console.log(
+    await client.query.notNullTest.findFirst({
+      where: eq(schemas.notNullTest.columns.id, 2),
+    }),
+  );
 })();

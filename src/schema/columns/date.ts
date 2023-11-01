@@ -12,8 +12,10 @@ interface DateColumnConfig {
 }
 
 export function date(name: string, config: DateColumnConfig) {
+  const { type } = config;
+
   return new ColumnBuilder({
     name,
-    type: config.type,
+    type,
   }).$type<Date>();
 }

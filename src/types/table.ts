@@ -1,4 +1,4 @@
-import type { ColumnBuilder } from "../column-types/builder";
+import type { ColumnBuilder } from "../schema/builder";
 
 export type Table<T extends Record<string, ColumnBuilder> = Record<string, ColumnBuilder>> = {
   name: string;

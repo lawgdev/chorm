@@ -16,8 +16,10 @@ interface IntegerColumnConfig {
 }
 
 export function integer(name: string, config: IntegerColumnConfig) {
+  const { type } = config;
+
   return new ColumnBuilder({
     name,
-    type: config.type,
+    type,
   }).$type<number>();
 }

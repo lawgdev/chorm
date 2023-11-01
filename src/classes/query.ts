@@ -1,14 +1,14 @@
 import type { QueryParams } from "@clickhouse/client";
 import type { Client } from ".";
-import type { ColumnBuilder } from "../column-types/builder";
 import { combineExpression } from "../expressions";
+import type { ColumnBuilder } from "../schema/builder";
 import type { ToOptional } from "../types/helpers";
 import type { Table } from "../types/table";
 
 type ClickhouseJSONResponse<T extends Table> = {
   meta: Array<{
-    name: keyof T["columns"][string]["columnName"];
-    type: keyof T["columns"][string]["columnType"];
+    name: keyof T["columns"][string]["name"];
+    type: keyof T["columns"][string]["type"];
   }>;
   data: Array<ExtractPropsFromTable<T>>;
   rows: number;
@@ -50,7 +50,6 @@ export class Query<T extends Table> {
       query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${combineExpression(
         params.where,
       )} LIMIT 1`,
-      format: "JSON",
     });
 
     const json = await query.json<ClickhouseJSONResponse<T>>();
@@ -71,21 +70,44 @@ export class Query<T extends Table> {
     return json.data;
   }
 
-  public async insert(data: ToOptional<ExtractPropsFromTable<T>>): Promise<number> {
-    const columns = Object.keys(data).join(", ");
-    const values = Object.values(data).join(", ");
+  public async insert(
+    data: ToOptional<ExtractPropsFromTable<T>> | ToOptional<ExtractPropsFromTable<T>>[],
+  ) {
+    if (Array.isArray(data)) {
+      if (data.length === 0) return [];
+    } else {
+      data = [data];
+    }
 
-    const query = await this.client.query({
-      query: `INSERT INTO ${this.database}.${this.table.name} (${columns}) VALUES (${values})`,
-      format: "JSON",
+    const values = Object.values(data);
+    const columnIndexes: Record<string, number> = Object.keys(data).reduce(
+      (acc, key, index) => {
+        acc[key] = index;
+
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    // Since we can't guarantee the order of the values, we need to sort them by column indexes
+    const sortedValuesByColumnIndexes = Object.keys(this.table.columns).map(key => {
+      const columnIndx = columnIndexes[key];
+      if (columnIndx === undefined) {
+        return null;
+      }
+
+      return values[columnIndx];
     });
 
-    const json = await query.json<ClickhouseJSONResponse<T>>();
+    const query = await this.client.insert({
+      table: this.table.name,
+      values: [sortedValuesByColumnIndexes],
+    });
 
-    return json.rows;
+    return query.query_id;
   }
 
-  public async delete(params: GenericParams<T>): Promise<number> {
+  public async delete(params: GenericParams<T>) {
     const query = await this.client.query({
       query: `DELETE FROM ${this.database}.${this.table.name} WHERE ${combineExpression(
         params.where,
@@ -94,7 +116,9 @@ export class Query<T extends Table> {
 
     const json = await query.json<ClickhouseJSONResponse<T>>();
 
-    return json.rows;
+    return {
+      returning: () => json.data,
+    };
   }
 
   public async update() {

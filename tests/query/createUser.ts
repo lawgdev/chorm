@@ -5,13 +5,13 @@ export let createdUserId: string;
 
 export default async function () {
   const generatedId = randomUUID();
-  const rows = await chorm.query.users.insert({
+  const queryId = await chorm.query.users.insert({
     id: generatedId,
     password: "password",
     username: "username",
     phone_number: "+1 1234567890",
   });
 
-  expect(rows).toEqual(1);
+  expect(queryId).toBeDefined();
   createdUserId = generatedId;
 }

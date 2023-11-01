@@ -1,3 +1,4 @@
 export * from "./classes";
-export * from "./column-types";
+export * from "./schema";
 export * from "./types";
+export * from "./utils/logger";

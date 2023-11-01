@@ -5,5 +5,8 @@ export function text(name: string) {
   return new ColumnBuilder({
     name,
     type: DATA_TYPE.String,
+    parser(value) {
+      return `'${value}'`;
+    },
   }).$type<string>();
 }

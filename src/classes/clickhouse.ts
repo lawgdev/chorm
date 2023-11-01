@@ -1,11 +1,13 @@
-import { ClickHouseLogLevel, createClient as internalCHClient } from "@clickhouse/client";
+import { createClient as internalCHClient } from "@clickhouse/client";
+import fs from "fs";
+import path from "path";
+import { adjectives, animals, colors, uniqueNamesGenerator } from "unique-names-generator";
+import type { MigrationBase } from "../types";
+import { EnumKeys, EnumValue } from "../types/helpers";
+import type { Table } from "../types/table";
+import { convertEnumToString } from "../utils/helpers";
 import { Logger } from "../utils/logger";
 import { Query } from "./query";
-import fs from "fs";
-import type { MigrationBase } from "../types";
-import { adjectives, animals, colors, uniqueNamesGenerator } from "unique-names-generator";
-import type { Table } from "../types/table";
-import path from "path";
 
 type Options<T extends Record<string, Record<string, unknown>>> = Parameters<
   typeof internalCHClient
@@ -29,7 +31,6 @@ export default class ClickHouse<T extends Record<string, Table>> {
 
   constructor(options: Options<T>) {
     this.client = internalCHClient({
-      log: { LoggerClass: Logger, level: ClickHouseLogLevel.DEBUG },
       ...options,
     });
     this.options = options;
@@ -48,27 +49,31 @@ export default class ClickHouse<T extends Record<string, Table>> {
   public async migrate({ folder }: { folder?: string } = {}) {
     const dirname = process.argv[1];
     if (!dirname) return;
-
+    //@ts-ignore
     const migrationsFolder = folder ?? `${path.dirname(dirname)}/migrations`;
 
-    this.startMigrations();
-    this.generateMigrations(migrationsFolder);
+    await this.startMigrations();
+    //this.generateMigrations(migrationsFolder);
   }
 
   private async startMigrations() {
     try {
-      for (const [tableName, tableColumns] of Object.entries(this.options.schemas)) {
-        const columns = Object.entries(tableColumns.columns).map(([columnName, column]) => {
-          return `${columnName} ${column.columnType}`;
+      for (const [_objName, table] of Object.entries(this.options.schemas)) {
+        const columns = Object.entries(table.columns).map(([columnName, column]) => {
+          return `${columnName} ${column.type}${
+            column.value
+              ? `(${convertEnumToString(column.value as Record<EnumKeys, EnumValue>)})`
+              : ""
+          }`;
         });
 
-        const primaryKeyColumn = Object.entries(tableColumns.columns).find(
-          ([_, column]) => column.columnPrimaryKey,
+        const primaryKeyColumn = Object.entries(table.columns).find(
+          ([_, column]) => column.primaryKey,
         )?.[0];
 
         await this.client.query({
           query: `
-          CREATE TABLE IF NOT EXISTS ${this.options.database}.${tableName}
+          CREATE TABLE IF NOT EXISTS ${this.options.database}.${table.name}
           (
             ${columns.join(",\n")}
           )
@@ -135,6 +140,7 @@ export default class ClickHouse<T extends Record<string, Table>> {
     return migrations.sort((m1, m2) => m1.version - m2.version);
   }
 
+  //@ts-ignore
   private async generateMigrations(folder: string) {
     const migrations = await this.getMigrations(folder);
     const lastMigration = migrations[migrations.length - 1];

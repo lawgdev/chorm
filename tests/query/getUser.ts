@@ -1,11 +1,10 @@
 import { randomUUID } from "crypto";
-import { chorm, testSchemas } from "../index.test";
-import { eq } from "../../src/expressions/conditions";
+import { chorm } from "../index.test";
 import { createdUserId } from "./createUser";
 
 export default async function () {
   const user = await chorm.query.users.findFirst({
-    where: eq(testSchemas.users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.columns.id, createdUserId),
   });
 
   expect(user).toStrictEqual({
@@ -16,13 +15,13 @@ export default async function () {
   });
 
   const users = await chorm.query.users.findMany({
-    where: eq(testSchemas.users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.columns.id, createdUserId),
   });
 
   expect(users.length).toBe(1);
 
   const noMatchingUsers = await chorm.query.users.findMany({
-    where: eq(testSchemas.users.columns.id, randomUUID()),
+    where: (users, { eq }) => eq(users.columns.id, randomUUID()),
   });
 
   expect(noMatchingUsers.length).toBe(0);

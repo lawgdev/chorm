@@ -1,10 +1,9 @@
-import { eq } from "../../src/expressions/conditions";
-import { chorm, testSchemas } from "../index.test";
+import { chorm } from "../index.test";
 import { createdUserId } from "./createUser";
 
 export default async function () {
   const queryId = await chorm.query.users.update({
-    where: eq(testSchemas.users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.columns.id, createdUserId),
     data: {
       password: "yayyy new password",
     },
@@ -13,7 +12,7 @@ export default async function () {
   expect(queryId).toBeDefined();
 
   const user = await chorm.query.users.findFirst({
-    where: eq(testSchemas.users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.columns.id, createdUserId),
   });
 
   expect(user).toStrictEqual({
@@ -25,7 +24,7 @@ export default async function () {
 
   // Multiple updates
   const multipleUpdatesQueryId = await chorm.query.users.update({
-    where: eq(testSchemas.users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.columns.id, createdUserId),
     data: {
       password: "changed newer password",
       phone_number: "+1 changed phon number",
@@ -36,7 +35,7 @@ export default async function () {
   expect(multipleUpdatesQueryId).toBeDefined();
 
   const multipleUpdatesUser = await chorm.query.users.findFirst({
-    where: eq(testSchemas.users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.columns.id, createdUserId),
   });
 
   expect(multipleUpdatesUser).toStrictEqual({

@@ -1,9 +1,10 @@
 import type { QueryParams } from "@clickhouse/client";
 import type { Client } from ".";
-import { combineExpression } from "../expressions";
+import { AllExpressions, combineExpression } from "../expressions";
 import type { ColumnBuilder } from "../schema/builder";
 import type { ToOptional } from "../types/helpers";
 import type { Table } from "../types/table";
+import * as conditions from "../expressions/conditions";
 
 type ClickhouseJSONResponse<T extends Table> = {
   meta: Array<{
@@ -30,8 +31,8 @@ type ExtractPropsFromTable<T extends Table> = {
   [K in keyof T["columns"]]: ColumnValue<T["columns"][K]>;
 };
 
-type GenericParams<_T extends Table> = {
-  where: string;
+type GenericParams<T extends Table> = {
+  where: (table: T, conditions: AllExpressions) => string;
 };
 
 export class Query<T extends Table> {
@@ -48,7 +49,7 @@ export class Query<T extends Table> {
   public async findFirst(params: GenericParams<T>) {
     const query = await this.client.query({
       query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${combineExpression(
-        params.where,
+        params.where(this.table, conditions),
       )} LIMIT 1`,
     });
 
@@ -60,7 +61,7 @@ export class Query<T extends Table> {
   public async findMany(params: GenericParams<T>) {
     const query = await this.client.query({
       query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${combineExpression(
-        params.where,
+        params.where(this.table, conditions),
       )}`,
       format: "JSON",
     });
@@ -103,7 +104,7 @@ export class Query<T extends Table> {
   public async delete(params: GenericParams<T>) {
     const query = await this.client.query({
       query: `ALTER TABLE ${this.database}.${this.table.name} DELETE WHERE ${combineExpression(
-        params.where,
+        params.where(this.table, conditions),
       )}`,
     });
 
@@ -125,7 +126,9 @@ export class Query<T extends Table> {
     const query = await this.client.query({
       query: `ALTER TABLE ${this.database}.${
         this.table.name
-      } UPDATE ${updateExpression} WHERE ${combineExpression(params.where)}`,
+      } UPDATE ${updateExpression} WHERE ${combineExpression(
+        params.where(this.table, conditions),
+      )}`,
     });
 
     console.log(query);

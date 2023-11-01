@@ -71,14 +71,8 @@ export class Query<T extends Table> {
   }
 
   public async insert(
-    data: ToOptional<ExtractPropsFromTable<T>> | ToOptional<ExtractPropsFromTable<T>>[],
+    data: ToOptional<ExtractPropsFromTable<T>>,
   ) {
-    if (Array.isArray(data)) {
-      if (data.length === 0) return [];
-    } else {
-      data = [data];
-    }
-
     const values = Object.values(data);
     const columnIndexes: Record<string, number> = Object.keys(data).reduce(
       (acc, key, index) => {

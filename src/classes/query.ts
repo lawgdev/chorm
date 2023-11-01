@@ -70,9 +70,7 @@ export class Query<T extends Table> {
     return json.data;
   }
 
-  public async insert(
-    data: ToOptional<ExtractPropsFromTable<T>>,
-  ) {
+  public async insert(data: ToOptional<ExtractPropsFromTable<T>>) {
     const values = Object.values(data);
     const columnIndexes: Record<string, number> = Object.keys(data).reduce(
       (acc, key, index) => {

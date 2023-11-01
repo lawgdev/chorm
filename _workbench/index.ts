@@ -18,28 +18,8 @@ import * as schemas from "./schemas";
     where: eq(schemas.balls.columns.cancelled, false),
   });
 
-  const items2 = (
-    await client.query.balls.insert({
-      id: "1",
-      cancelled: true,
-    })
-  ).returning();
-
-  console.log(
-    await client.query.balls.findFirst({
-      where: eq(schemas.balls.columns.id, "1"),
-    }),
-  );
-
-  console.log(
-    await client.query.balls.findFirst({
-      where: eq(schemas.balls.columns.cancelled, false),
-    }),
-  );
-
-  console.log(
-    await client.query.notNullTest.findFirst({
-      where: eq(schemas.notNullTest.columns.id, 2),
-    }),
-  );
+  const items2 = await client.query.balls.insert({
+    id: "1",
+    cancelled: true,
+  });
 })();

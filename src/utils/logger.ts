@@ -22,15 +22,15 @@ export class Logger implements LoggerClass {
     console.error(`[${clc.red(params.module)}] ${params.message}`, params.err);
   }
 
-  public static info(prefix: string, message: string | unknown) {
-    console.log(`[${clc.cyan(prefix)}] ${message}`);
+  public static info(message: string | unknown) {
+    console.log(`${clc.cyan("Info:")} ${message}`);
   }
 
-  public static error(prefix: string, message: string | unknown) {
-    console.log(`[${clc.red(prefix)}] ${message}`);
+  public static error(message: string | unknown) {
+    console.log(`${clc.red("Error:")} ${message}`);
   }
 
-  public static success(prefix: string, message: string | unknown) {
-    console.log(`[${clc.green(prefix)}] ${message}`);
+  public static success(message: string | unknown) {
+    console.log(`${clc.green("Success:")} ${message}`);
   }
 }

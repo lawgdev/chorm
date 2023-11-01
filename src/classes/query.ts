@@ -99,22 +99,38 @@ export class Query<T extends Table> {
     return query.query_id;
   }
 
+  // Todo: allow user to specify if they want to do a "lightweight" or a "hard" delete
   public async delete(params: GenericParams<T>) {
     const query = await this.client.query({
-      query: `DELETE FROM ${this.database}.${this.table.name} WHERE ${combineExpression(
+      query: `ALTER TABLE ${this.database}.${this.table.name} DELETE WHERE ${combineExpression(
         params.where,
       )}`,
     });
 
-    const json = await query.json<ClickhouseJSONResponse<T>>();
-
-    return {
-      returning: () => json.data,
-    };
+    return query.query_id;
   }
 
-  public async update() {
-    // TODO: implement
+  public async update(
+    params: GenericParams<T> & {
+      data: Partial<ExtractPropsFromTable<T>>;
+    },
+  ) {
+    const updateExpression = Object.entries(params.data).map(([key, value]) => {
+      const parsedValue = this.table.columns[key]?.sqlParser(value) ?? value;
+      return `${key} = ${parsedValue}`;
+    });
+
+    console.log(updateExpression);
+
+    const query = await this.client.query({
+      query: `ALTER TABLE ${this.database}.${
+        this.table.name
+      } UPDATE ${updateExpression} WHERE ${combineExpression(params.where)}`,
+    });
+
+    console.log(query);
+
+    return query.query_id;
   }
 
   public async raw(params: QueryParams) {

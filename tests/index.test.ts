@@ -5,6 +5,7 @@ import checkProperties from "./client/checkProperties";
 import defined from "./client/defined";
 import createUser from "./query/createUser";
 import getUser from "./query/getUser";
+import updateUser from "./query/updateUser";
 
 enum Test {
   A,
@@ -61,4 +62,6 @@ describe("Test chorm", () => {
   /* Query */
   it("should create a user", createUser);
   it("should fetch a user", getUser);
+  it("should update user", updateUser);
+  //it("should delete user", deleteUser);
 });

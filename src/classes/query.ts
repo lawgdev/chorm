@@ -91,12 +91,12 @@ export class Query<T extends Table> {
 
     // Since we can't guarantee the order of the values, we need to sort them by column indexes
     const sortedValuesByColumnIndexes = Object.keys(this.table.columns).map(key => {
-      const columnIndx = columnIndexes[key];
-      if (columnIndx === undefined) {
+      const foundColumn = columnIndexes[key];
+      if (foundColumn === undefined) {
         return null;
       }
 
-      return values[columnIndx];
+      return values[foundColumn];
     });
 
     const query = await this.client.insert({

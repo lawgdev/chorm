@@ -17,3 +17,5 @@ export type EnumValue = string | number;
 export type ValidEnum<T extends Record<EnumKeys, EnumValue>> = {
   [K in keyof T]: T[K];
 } & { readonly length: Exclude<keyof T, "length">[] };
+
+export type AnyEnumValue<T extends Record<EnumKeys, EnumValue>> = T[keyof T];

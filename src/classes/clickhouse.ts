@@ -1,10 +1,10 @@
 import { createClient as internalCHClient } from "@clickhouse/client";
-import path from "path";
 import { EnumKeys, EnumValue } from "../types/helpers";
 import type { Table } from "../types/table";
 import { convertEnumToString } from "../utils/helpers";
 import { Logger } from "../utils/logger";
 import { Query } from "./query";
+import Migration from "../cli/lib/migration";
 
 type Options<T extends Record<string, Record<string, unknown>>> = Parameters<
   typeof internalCHClient
@@ -43,14 +43,9 @@ export default class ClickHouse<T extends Record<string, Table>> {
     }, {} as Queries<T>);
   }
 
-  public async migrate({ folder }: { folder?: string } = {}) {
-    const dirname = process.argv[1];
-    if (!dirname) return;
-    //@ts-ignore
-    const migrationsFolder = folder ?? `${path.dirname(dirname)}/migrations`;
-
+  public async migrate({ folder }: { folder: string } = { folder: "./migrations" }) {
     await this.startMigrations();
-    //this.generateMigrations(migrationsFolder);
+    await this.applyMigrations(folder);
   }
 
   private async startMigrations() {
@@ -93,6 +88,43 @@ export default class ClickHouse<T extends Record<string, Table>> {
       });
     } catch (e: unknown) {
       Logger.error("Error while creating _migrations table" + e);
+      process.exit(1);
+    }
+  }
+
+  private async applyMigrations(migrationsFolder: string) {
+    const migration = new Migration();
+
+    try {
+      const migrations = await migration.getMigrations(migrationsFolder);
+
+      for (const migrationInfo of migrations) {
+        // Check if the migration has already been applied
+        const queriedData = await this.client.query({
+          query: `SELECT * FROM _migrations WHERE version = '${migrationInfo.version}'`,
+        });
+
+        // TODO: strictly type
+        const json = await queriedData.json() as any;
+
+        if (json.data.length === 0) {
+          // Apply the migration
+          await this.client.query({
+            query: migrationInfo.content,
+          });
+
+          // Record the migration in the _migrations table
+          await this.client.query({
+            query: `INSERT INTO _migrations (version, checksum, migration_name) VALUES (${migrationInfo.version}, '${migrationInfo.checksum}', '${migrationInfo.name}')`,
+          });
+
+          Logger.success(`Migration ${migrationInfo.name} applied successfully`);
+        } else {
+          Logger.info(`Migration ${migrationInfo.name} already applied`);
+        }
+      }
+    } catch (e: unknown) {
+      Logger.error(`Error while applying migrations: ${e}`);
       process.exit(1);
     }
   }

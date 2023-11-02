@@ -3,14 +3,14 @@ import { createdUserId } from "./createUser";
 
 export default async function () {
   const queryId = await chorm.query.users.delete({
-    where: (users, { eq }) => eq(users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.id, createdUserId),
   });
 
   expect(queryId).toBeDefined();
 
   setTimeout(async () => {
     const user = await chorm.query.users.findFirst({
-      where: (users, { eq }) => eq(users.columns.id, createdUserId),
+      where: (users, { eq }) => eq(users.id, createdUserId),
     });
 
     expect(user).toBeNull();

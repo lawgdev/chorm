@@ -14,7 +14,7 @@ export class ColumnBuilder<T = unknown, R extends boolean = false> {
   public isNotNull = false;
   public value: T | null;
 
-  public defaultValue: T | string | null = null;
+  public defaultValue: T | null = null;
   public sqlParser: (value: any) => any;
 
   constructor(options: ColumnBuilderOptions<T>) {
@@ -26,11 +26,6 @@ export class ColumnBuilder<T = unknown, R extends boolean = false> {
 
   default(value: T) {
     this.defaultValue = value;
-    return this;
-  }
-
-  defaultRandom() {
-    this.defaultValue = `generateUUIDv4()`;
     return this;
   }
 

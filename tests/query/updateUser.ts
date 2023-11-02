@@ -3,7 +3,7 @@ import { createdUserId } from "./createUser";
 
 export default async function () {
   const queryId = await chorm.query.users.update({
-    where: (users, { eq }) => eq(users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.id, createdUserId),
     data: {
       password: "yayyy new password",
     },
@@ -13,7 +13,7 @@ export default async function () {
 
   setTimeout(async () => {
     const user = await chorm.query.users.findFirst({
-      where: (users, { eq }) => eq(users.columns.id, createdUserId),
+      where: (users, { eq }) => eq(users.id, createdUserId),
     });
 
     expect(user).toStrictEqual({
@@ -26,7 +26,7 @@ export default async function () {
 
   // Multiple updates
   const multipleUpdatesQueryId = await chorm.query.users.update({
-    where: (users, { eq }) => eq(users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.id, createdUserId),
     data: {
       password: "changed newer password",
       phone_number: "+1 changed phon number",
@@ -38,7 +38,7 @@ export default async function () {
 
   setTimeout(async () => {
     const multipleUpdatesUser = await chorm.query.users.findFirst({
-      where: (users, { eq }) => eq(users.columns.id, createdUserId),
+      where: (users, { eq }) => eq(users.id, createdUserId),
     });
 
     expect(multipleUpdatesUser).toStrictEqual({

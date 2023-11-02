@@ -3,12 +3,14 @@ import ClickHouse from "../src/classes/clickhouse";
 import { DATA_TYPE } from "../src/schema/validation";
 import checkProperties from "./client/checkProperties";
 import defined from "./client/defined";
+import createCustomer from "./query/complex/createCustomer";
+import getCustomer from "./query/complex/getCustomer";
 import createUser from "./query/createUser";
 import deleteUser from "./query/deleteUser";
 import getUser from "./query/getUser";
 import updateUser from "./query/updateUser";
 
-enum Test {
+export enum Test {
   A,
   B,
   C,
@@ -67,4 +69,6 @@ describe("Test chorm", () => {
   it("should delete user", deleteUser);
 
   /* Complex Query */
+  it("should create customer", createCustomer);
+  it("should fetch customer", getCustomer);
 });

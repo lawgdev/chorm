@@ -1,6 +1,7 @@
 import type { ColumnBuilder } from "../schema/builder";
 import type { ExtractTypeFromColumn } from "../types/table";
 
+// Where
 export function eq<T extends ColumnBuilder = ColumnBuilder>(
   column: T,
   value: ExtractTypeFromColumn<T>,
@@ -129,4 +130,13 @@ export function arrayContained<T extends ColumnBuilder = ColumnBuilder>(
 
 export function arrayOverlaps<T extends ColumnBuilder = ColumnBuilder>(column1: T, column2: T) {
   return `${column1.name} && ${column2.name}`;
+}
+
+// Order by
+export function asc<T extends ColumnBuilder = ColumnBuilder>(column: T) {
+  return `${column.name} ASC`;
+}
+
+export function desc<T extends ColumnBuilder = ColumnBuilder>(column: T) {
+  return `${column.name} DESC`;
 }

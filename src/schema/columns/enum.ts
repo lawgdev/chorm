@@ -1,4 +1,4 @@
-import { EnumKeys, EnumValue, ValidEnum } from "../../types/helpers";
+import { AnyEnumValue, EnumKeys, EnumValue } from "../../types/helpers";
 import { ColumnBuilder } from "../builder";
 import { DATA_TYPE } from "../validation";
 
@@ -19,5 +19,5 @@ export function clickhouseEnum<T extends Record<EnumKeys, EnumValue>>(
     name,
     type,
     value,
-  }).$type<ValidEnum<T>>();
+  }).$type<AnyEnumValue<T>>();
 }

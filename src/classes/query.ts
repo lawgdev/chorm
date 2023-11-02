@@ -1,39 +1,15 @@
 import type { QueryParams } from "@clickhouse/client";
 import type { Client } from ".";
 import { AllExpressions, combineExpression } from "../expressions";
-import type { ColumnBuilder } from "../schema/builder";
+import * as conditions from "../expressions/conditions";
+import { ClickhouseJSONResponse, ExtractPropsFromTable } from "../types/clickhouse";
 import type { ToOptional } from "../types/helpers";
 import type { Table } from "../types/table";
-import * as conditions from "../expressions/conditions";
-
-type ClickhouseJSONResponse<T extends Table> = {
-  meta: Array<{
-    name: keyof T["columns"][string]["name"];
-    type: keyof T["columns"][string]["type"];
-  }>;
-  data: Array<ExtractPropsFromTable<T>>;
-  rows: number;
-  rows_before_limit_at_least: number;
-  statistics: {
-    elapsed: number;
-    rows_read: number;
-    bytes_read: number;
-  };
-};
-
-type ColumnValue<U> = U extends ColumnBuilder<infer V, infer R>
-  ? R extends true
-    ? V
-    : V | null
-  : never;
-
-type ExtractPropsFromTable<T extends Table> = {
-  [K in keyof T["columns"]]: ColumnValue<T["columns"][K]>;
-};
+import { validateParam } from "../utils/param-validation";
 
 type GenericParams<T extends Table> = {
-  where?: (table: T, conditions: AllExpressions) => string;
-  orderBy?: (table: T, conditions: AllExpressions) => string;
+  where?: (columns: T["columns"], conditions: AllExpressions) => string;
+  orderBy?: (columns: T["columns"], conditions: AllExpressions) => string;
 };
 
 export class Query<T extends Table> {
@@ -48,15 +24,18 @@ export class Query<T extends Table> {
   }
 
   public async findFirst(params: GenericParams<T>) {
-    let query;
+    const validation = {
+      where: params.where
+        ? `WHERE ${combineExpression(params.where(this.table.columns, conditions))}`
+        : "",
+      orderBy: params.orderBy
+        ? `ORDER BY ${combineExpression(params.orderBy(this.table.columns, conditions))}`
+        : "",
+    };
 
-    if (params.where) {
-      query = `SELECT * FROM ${this.database}.${this.table.name} WHERE ${combineExpression(
-        params.where(this.table, conditions),
-      )} LIMIT 1`;
-    } else {
-      query = `SELECT * FROM ${this.database}.${this.table.name} LIMIT 1`;
-    }
+    const query = `SELECT * FROM ${this.database}.${this.table.name} ${validateParam(
+      validation,
+    )} LIMIT 1`;
 
     const queriedData = await this.client.query({
       query,
@@ -69,15 +48,15 @@ export class Query<T extends Table> {
 
   public async findMany(params: GenericParams<T>) {
     const validation = {
-      where: params.where ? `WHERE ${combineExpression(params.where(this.table, conditions))}` : "",
+      where: params.where
+        ? `WHERE ${combineExpression(params.where(this.table.columns, conditions))}`
+        : "",
       orderBy: params.orderBy
-        ? `ORDER BY ${combineExpression(params.orderBy(this.table, conditions))}`
+        ? `ORDER BY ${combineExpression(params.orderBy(this.table.columns, conditions))}`
         : "",
     };
 
-    const query = `SELECT * FROM ${this.database}.${this.table.name} ${Object.values(validation)
-      .join(" ")
-      .trim()}`;
+    const query = `SELECT * FROM ${this.database}.${this.table.name} ${validateParam(validation)}`;
 
     const queriedData = await this.client.query({
       query,
@@ -104,12 +83,13 @@ export class Query<T extends Table> {
     const sortedValuesByColumnIndexes = Object.keys(this.table.columns).map(key => {
       const foundColumn = columnIndexes[key];
       if (foundColumn === undefined) {
-        return null;
+        return this.table.columns[key]?.defaultValue;
       }
 
       return values[foundColumn];
     });
 
+    console.log(sortedValuesByColumnIndexes);
     const query = await this.client.insert({
       table: this.table.name,
       values: [sortedValuesByColumnIndexes],
@@ -120,15 +100,15 @@ export class Query<T extends Table> {
 
   // Todo: allow user to specify if they want to do a "lightweight" or a "hard" delete
   public async delete(params: GenericParams<T>) {
-    let query;
+    const validation = {
+      where: params.where
+        ? `WHERE ${combineExpression(params.where(this.table.columns, conditions))}`
+        : "",
+    };
 
-    if (params.where) {
-      query = `ALTER TABLE ${this.database}.${this.table.name} DELETE WHERE ${combineExpression(
-        params.where(this.table, conditions),
-      )}`;
-    } else {
-      query = `ALTER TABLE ${this.database}.${this.table.name} DELETE`;
-    }
+    const query = `ALTER TABLE ${this.database}.${this.table.name} DELETE ${validateParam(
+      validation,
+    )}`;
 
     const queriedData = await this.client.query({
       query,
@@ -153,7 +133,7 @@ export class Query<T extends Table> {
       query: `ALTER TABLE ${this.database}.${
         this.table.name
       } UPDATE ${updateExpression} WHERE ${combineExpression(
-        params.where(this.table, conditions),
+        params.where(this.table.columns, conditions),
       )}`,
     });
 

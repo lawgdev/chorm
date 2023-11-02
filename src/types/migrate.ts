@@ -1,6 +1,6 @@
 export interface MigrationBase {
   version: number;
-  filename: string;
+  name: string;
   checksum: number;
   content: string;
 }

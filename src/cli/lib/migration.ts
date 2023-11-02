@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
 import { adjectives, animals, colors, uniqueNamesGenerator } from "unique-names-generator";
-import type { MigrationBase } from "../../types";
+import type { MigrationBase } from "../../types/migrate";
 import { Logger } from "../../utils/logger";
 
 export default class Migration {
-  private async getMigrations(folder: string): Promise<MigrationBase[]> {
+  public async getMigrations(folder: string): Promise<MigrationBase[]> {
     const migrations: MigrationBase[] = [];
     let files: string[];
 
@@ -26,17 +26,17 @@ export default class Migration {
 
       const migrationContent = fs.readFileSync(migrationPath, "utf-8");
 
-      const [version, filename] = file.split("_");
+      const [version, name] = file.split("_");
       const checksum = migrationContent.length;
 
-      if (!version || !filename) {
+      if (!version || !name) {
         Logger.error("Invalid migration file name");
         process.exit(1);
       }
 
       migrations.push({
         version: Number(version),
-        filename,
+        name,
         checksum,
         content: migrationContent,
       });
@@ -57,9 +57,8 @@ export default class Migration {
       ? String(lastMigration.version + 1).padStart(4, "0")
       : "0000";
 
-    const newMigrationContent = ``;
-
-    this.createMigrationFile(folder, newMigrationVersion, newMigrationName, newMigrationContent);
+    // Create a new empty migration file
+    this.createMigrationFile(folder, newMigrationVersion, newMigrationName, "");
   }
 
   private createMigrationFile(

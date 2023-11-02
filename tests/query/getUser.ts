@@ -4,7 +4,7 @@ import { createdUserId } from "./createUser";
 
 export default async function () {
   const user = await chorm.query.users.findFirst({
-    where: (users, { eq }) => eq(users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.id, createdUserId),
   });
 
   expect(user).toStrictEqual({
@@ -15,13 +15,13 @@ export default async function () {
   });
 
   const users = await chorm.query.users.findMany({
-    where: (users, { eq }) => eq(users.columns.id, createdUserId),
+    where: (users, { eq }) => eq(users.id, createdUserId),
   });
 
   expect(users.length).toBe(1);
 
   const noMatchingUsers = await chorm.query.users.findMany({
-    where: (users, { eq }) => eq(users.columns.id, randomUUID()),
+    where: (users, { eq }) => eq(users.id, randomUUID()),
   });
 
   expect(noMatchingUsers.length).toBe(0);

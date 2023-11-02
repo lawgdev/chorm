@@ -1,10 +1,18 @@
 import { ColumnBuilder } from "../builder";
 import { DATA_TYPE } from "../validation";
 
-export function text(name: string) {
+type ValidStringTypes = typeof DATA_TYPE.String | typeof DATA_TYPE.FixedString;
+
+interface StringColumnConfig {
+  type: ValidStringTypes;
+}
+
+export function text(name: string, config: StringColumnConfig = { type: DATA_TYPE.String }) {
+  const { type } = config;
+
   return new ColumnBuilder({
     name,
-    type: DATA_TYPE.String,
+    type,
     parser(value) {
       return `'${value}'`;
     },

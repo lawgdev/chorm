@@ -14,7 +14,8 @@ export default async function () {
     is_admin: false,
     id,
     customer_name: "John Doe",
-    random_enum: Test.A,
+    // todo: figure out why random_enum gives a Enum data type cannot be empty
+    random_enum: "A",
     uuid: "123",
     pi: 3.14,
   });

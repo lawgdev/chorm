@@ -1,23 +1,25 @@
-import sqlstring from "sqlstring";
-
-class SQLParser {
-  private readonly rawQuery: TemplateStringsArray;
-  private readonly arguments: any[];
+export class SQLParser {
+  public readonly rawQuery: TemplateStringsArray;
+  public readonly rawArguments: any[];
 
   constructor(query: TemplateStringsArray, args: any[]) {
     this.rawQuery = query;
-    this.arguments = args;
+    this.rawArguments = args;
   }
 
-  get query() {
-    return this.rawQuery.join("?");
-  }
+  public toString() {
+    return this.rawQuery.reduce((acc, part, index) => {
+      const arg = this.rawArguments[index];
 
-  get format() {
-    return sqlstring.format(this.query, this.arguments);
+      if (typeof arg === "undefined") {
+        return acc + part;
+      }
+
+      return acc + part + arg;
+    }, "");
   }
 }
 
 export function sql(query: TemplateStringsArray, ...args: any[]) {
-  return new SQLParser(query, args).format;
+  return new SQLParser(query, args);
 }

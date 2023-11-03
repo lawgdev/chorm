@@ -27,7 +27,7 @@ export const testSchemas = {
     id: text("id").primaryKey().notNull(),
     customer_name: text("customer_name").notNull(),
     is_admin: boolean("is_admin").notNull().default(false),
-    created_at: date("created_at", { type: DATA_TYPE.Date }).notNull(),
+    created_at: date("created_at", { type: DATA_TYPE.DateTime64 }).notNull(),
     random_enum: clickhouseEnum("random_enum", {
       type: DATA_TYPE.Enum8,
       value: Test,

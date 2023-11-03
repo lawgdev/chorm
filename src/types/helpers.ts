@@ -19,3 +19,7 @@ export type ValidEnum<T extends Record<EnumKeys, EnumValue>> = {
 } & { readonly length: Exclude<keyof T, "length">[] };
 
 export type AnyEnumValue<T extends Record<EnumKeys, EnumValue>> = T[keyof T];
+
+export type KeysOfEnum<T extends Record<EnumKeys, EnumValue>> = {
+  [K in keyof T]: T[K] extends AnyEnumValue<T> ? K : never;
+}[keyof T];

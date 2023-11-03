@@ -1,14 +1,16 @@
 import type { QueryParams } from "@clickhouse/client";
 import type { Client } from ".";
-import { AllExpressions, combineExpression } from "../expressions";
+import { AllExpressions } from "../expressions";
 import * as conditions from "../expressions/conditions";
+import { ColumnBuilder } from "../schema/builder";
 import { ClickhouseJSONResponse, ExtractPropsFromTable } from "../types/clickhouse";
 import type { ToOptional } from "../types/helpers";
 import type { Table } from "../types/table";
-import { validateParam } from "../utils/param-validation";
+import { parseQuery, parseValues } from "../utils/param-validation";
+import { SQLParser, sql } from "../utils/sql";
 
 type GenericParams<T extends Table> = {
-  where?: (columns: T["columns"], conditions: AllExpressions) => string;
+  where: (columns: T["columns"], conditions: AllExpressions) => SQLParser;
   orderBy?: (columns: T["columns"], conditions: AllExpressions) => string;
 };
 
@@ -24,21 +26,11 @@ export class Query<T extends Table> {
   }
 
   public async findFirst(params: GenericParams<T>) {
-    const validation = {
-      where: params.where
-        ? `WHERE ${combineExpression(params.where(this.table.columns, conditions))}`
-        : "",
-      orderBy: params.orderBy
-        ? `ORDER BY ${combineExpression(params.orderBy(this.table.columns, conditions))}`
-        : "",
-    };
-
-    const query = `SELECT * FROM ${this.database}.${this.table.name} ${validateParam(
-      validation,
-    )} LIMIT 1`;
+    const { template, query_params } = parseQuery(params.where(this.table.columns, conditions));
 
     const queriedData = await this.client.query({
-      query,
+      query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${template} LIMIT 1`,
+      query_params,
     });
 
     const json = await queriedData.json<ClickhouseJSONResponse<T>>();
@@ -47,20 +39,11 @@ export class Query<T extends Table> {
   }
 
   public async findMany(params: GenericParams<T>) {
-    const validation = {
-      where: params.where
-        ? `WHERE ${combineExpression(params.where(this.table.columns, conditions))}`
-        : "",
-      orderBy: params.orderBy
-        ? `ORDER BY ${combineExpression(params.orderBy(this.table.columns, conditions))}`
-        : "",
-    };
-
-    const query = `SELECT * FROM ${this.database}.${this.table.name} ${validateParam(validation)}`;
+    const { template, query_params } = parseQuery(params.where(this.table.columns, conditions));
 
     const queriedData = await this.client.query({
-      query,
-      format: "JSON",
+      query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${template}`,
+      query_params,
     });
 
     const json = await queriedData.json<ClickhouseJSONResponse<T>>();
@@ -69,30 +52,31 @@ export class Query<T extends Table> {
   }
 
   public async insert(data: ToOptional<ExtractPropsFromTable<T>>) {
-    const values = Object.values(data);
-    const columnIndexes: Record<string, number> = Object.keys(data).reduce(
-      (acc, key, index) => {
-        acc[key] = index;
+    const columns = Object.keys(this.table.columns);
+    const values = columns
+      .map(columnName => {
+        const column = this.table.columns[columnName];
+        if (!column) return undefined;
 
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
+        const value =
+          data[columnName as keyof ToOptional<ExtractPropsFromTable<T>>] ?? column.defaultValue;
 
-    // Since we can't guarantee the order of the values, we need to sort them by column indexes
-    const sortedValuesByColumnIndexes = Object.keys(this.table.columns).map(key => {
-      const foundColumn = columnIndexes[key];
-      if (foundColumn === undefined) {
-        return this.table.columns[key]?.defaultValue;
-      }
+        return { column, value };
+      })
+      .filter(Boolean) as Array<{ column: ColumnBuilder; value: unknown }>;
 
-      return values[foundColumn];
-    });
+    if (values.length === 0) {
+      throw new Error("No values were provided to insert");
+    }
 
-    console.log(sortedValuesByColumnIndexes);
-    const query = await this.client.insert({
-      table: this.table.name,
-      values: [sortedValuesByColumnIndexes],
+    const { template, query_params } = parseValues(...values);
+
+    console.log(template, query_params);
+    const query = await this.client.command({
+      query: `INSERT INTO ${this.database}.${this.table.name} (${columns.join(
+        ", ",
+      )}) VALUES (${template})`,
+      query_params,
     });
 
     return query.query_id;
@@ -100,18 +84,11 @@ export class Query<T extends Table> {
 
   // Todo: allow user to specify if they want to do a "lightweight" or a "hard" delete
   public async delete(params: GenericParams<T>) {
-    const validation = {
-      where: params.where
-        ? `WHERE ${combineExpression(params.where(this.table.columns, conditions))}`
-        : "",
-    };
-
-    const query = `ALTER TABLE ${this.database}.${this.table.name} DELETE ${validateParam(
-      validation,
-    )}`;
+    const { template, query_params } = parseQuery(params.where(this.table.columns, conditions));
 
     const queriedData = await this.client.query({
-      query,
+      query: `ALTER TABLE ${this.database}.${this.table.name} DELETE WHERE ${template}`,
+      query_params,
     });
 
     return queriedData.query_id;
@@ -122,19 +99,20 @@ export class Query<T extends Table> {
       data: Partial<ExtractPropsFromTable<T>>;
     },
   ) {
-    if (!params.where) return;
-
-    const updateExpression = Object.entries(params.data).map(([key, value]) => {
-      const parsedValue = this.table.columns[key]?.sqlParser(value) ?? value;
-      return `${key} = ${parsedValue}`;
+    const { template, query_params } = parseQuery(params.where(this.table.columns, conditions));
+    const updateExpressions = Object.entries(params.data).map(([key, value]) => {
+      const column = this.table.columns[key];
+      return parseQuery(sql`${column} = ${value}`, column?.name);
     });
 
     const query = await this.client.query({
-      query: `ALTER TABLE ${this.database}.${
-        this.table.name
-      } UPDATE ${updateExpression} WHERE ${combineExpression(
-        params.where(this.table.columns, conditions),
-      )}`,
+      query: `ALTER TABLE ${this.database}.${this.table.name} UPDATE ${updateExpressions
+        .map(({ template }) => `${template}`)
+        .join(", ")} WHERE ${template}`,
+      query_params: {
+        ...query_params,
+        ...updateExpressions.reduce((acc, { query_params }) => ({ ...acc, ...query_params }), {}),
+      },
     });
 
     return query.query_id;

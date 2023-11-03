@@ -4,7 +4,6 @@ type ColumnBuilderOptions<T = unknown> = {
   name: string;
   type: DATA_TYPE;
   value?: T;
-  parser?: (value: any) => any;
 };
 
 export class ColumnBuilder<T = unknown, R extends boolean = false> {
@@ -15,12 +14,10 @@ export class ColumnBuilder<T = unknown, R extends boolean = false> {
   public value: T | null;
 
   public defaultValue: T | null = null;
-  public sqlParser: (value: any) => any;
 
   constructor(options: ColumnBuilderOptions<T>) {
     this.name = options.name;
     this.type = options.type;
-    this.sqlParser = options.parser ?? (value => value);
     this.value = options.value ?? null;
   }
 
@@ -41,5 +38,9 @@ export class ColumnBuilder<T = unknown, R extends boolean = false> {
 
   $type<U>() {
     return this as unknown as ColumnBuilder<U, R>;
+  }
+
+  public toString() {
+    return this.name;
   }
 }

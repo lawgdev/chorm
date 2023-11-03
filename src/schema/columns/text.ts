@@ -13,8 +13,5 @@ export function text(name: string, config: StringColumnConfig = { type: DATA_TYP
   return new ColumnBuilder({
     name,
     type,
-    parser(value) {
-      return `'${value}'`;
-    },
   }).$type<string>();
 }

@@ -28,6 +28,7 @@ export class Query<T extends Table> {
   public async findFirst(params: GenericParams<T>) {
     const { template, query_params } = parseQuery(params.where(this.table.columns, conditions));
 
+    console.log(template, query_params);
     const queriedData = await this.client.query({
       query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${template} LIMIT 1`,
       query_params,
@@ -59,7 +60,9 @@ export class Query<T extends Table> {
         if (!column) return undefined;
 
         const value =
-          data[columnName as keyof ToOptional<ExtractPropsFromTable<T>>] ?? column.defaultValue;
+          data[columnName as keyof ToOptional<ExtractPropsFromTable<T>>] ??
+          column.defaultValue ??
+          null;
 
         return { column, value };
       })
@@ -71,7 +74,6 @@ export class Query<T extends Table> {
 
     const { template, query_params } = parseValues(...values);
 
-    console.log(template, query_params);
     const query = await this.client.command({
       query: `INSERT INTO ${this.database}.${this.table.name} (${columns.join(
         ", ",

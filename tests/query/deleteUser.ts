@@ -1,4 +1,4 @@
-import { chorm } from "../index.test";
+import { chorm, doAsync } from "../index.test";
 import { createdUserId } from "./createUser";
 
 export default async function () {
@@ -8,11 +8,11 @@ export default async function () {
 
   expect(queryId).toBeDefined();
 
-  setTimeout(async () => {
+  doAsync(async () => {
     const user = await chorm.query.users.findFirst({
       where: (users, { eq }) => eq(users.id, createdUserId),
     });
 
     expect(user).toBeNull();
-  }, 5);
+  });
 }

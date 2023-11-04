@@ -51,12 +51,14 @@ export default class ClickHouse<T extends Record<string, Table>> {
   private async startMigrations() {
     try {
       for (const [_objName, table] of Object.entries(this.options.schemas)) {
-        const columns = Object.entries(table.columns).map(([columnName, column]) => {
-          return `${columnName} ${column.type}${
+        const columns = Object.entries(table.columns).map(([_key, column]) => {
+          const columnValue = `${column.type}${
             column.value
               ? `(${convertEnumToString(column.value as Record<EnumKeys, EnumValue>)})`
               : ""
           }`;
+
+          return `${column.name} ${column.isNotNull ? columnValue : `Nullable(${columnValue})`}`;
         });
 
         const primaryKeyColumn = Object.entries(table.columns).find(
@@ -105,7 +107,7 @@ export default class ClickHouse<T extends Record<string, Table>> {
         });
 
         // TODO: strictly type
-        const json = await queriedData.json() as any;
+        const json = (await queriedData.json()) as any;
 
         if (json.data.length === 0) {
           // Apply the migration
@@ -131,12 +133,6 @@ export default class ClickHouse<T extends Record<string, Table>> {
 
   public async ping() {
     await this.client.ping();
-  }
-
-  public async drop() {
-    await this.client.query({
-      query: `DROP DATABASE IF EXISTS ${this.options.database}`,
-    });
   }
 
   public async close() {

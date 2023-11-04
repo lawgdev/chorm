@@ -8,23 +8,28 @@ export function validateParam(obj: { [x: string]: string }) {
 
 export function parseQuery(sqlParser: SQLParser, prefixer?: string) {
   const { rawQuery, rawArguments } = sqlParser;
-
   const params: Record<string, any> = {};
 
   let columnType: DATA_TYPE;
-  const template = rawQuery.reduce((acc, current, index) => {
-    const arg = rawArguments[index];
-
-    if (!arg) return acc + current;
-    if (arg instanceof ColumnBuilder) {
-      columnType = arg.type;
-      return acc + current + arg.name;
+  let argIndex = 0;
+  const template = rawQuery.reduce((acc, current) => {
+    if (current.trim() !== "") {
+      return acc + current;
     }
 
-    const key = `${prefixer ?? ""}v${index}`;
+    const arg = rawArguments[argIndex];
+    if (arg instanceof ColumnBuilder) {
+      columnType = arg.type;
+      argIndex++;
 
+      return acc + arg.name;
+    }
+
+    const key = `${prefixer ?? ""}v${argIndex}`;
     params[key] = arg;
-    return acc + current + `{${key}: ${columnType}}`;
+    argIndex++;
+
+    return acc + `{${key}: ${columnType}}`;
   }, "");
 
   return {
@@ -38,9 +43,10 @@ export function parseValues(...values: Array<{ column: ColumnBuilder; value: any
   const template = values.reduce((acc, valuePartial, index) => {
     const { column, value } = valuePartial;
     const key = `v${index}`;
+    const columnType = column.isNotNull ? column.type : `Nullable(${column.type})`;
 
     params[key] = value;
-    return acc + (index === 0 ? "" : ", ") + `{${key}: ${column.type}}`;
+    return acc + (index === 0 ? "" : ", ") + `{${key}: ${columnType}}`;
   }, "");
 
   return {

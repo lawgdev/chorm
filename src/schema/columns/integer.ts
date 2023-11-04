@@ -19,7 +19,7 @@ interface IntegerColumnConfig {
   type: ValidIntTypes;
 }
 
-export function integer(name: string, config: IntegerColumnConfig) {
+export function integer(name: string, config: IntegerColumnConfig = { type: DATA_TYPE.Int32 }) {
   const { type } = config;
 
   return new ColumnBuilder({

@@ -1,4 +1,4 @@
-import { chorm } from "../index.test";
+import { chorm, doAsync } from "../index.test";
 import { createdUserId } from "./createUser";
 
 export default async function () {
@@ -11,7 +11,7 @@ export default async function () {
 
   expect(queryId).toBeDefined();
 
-  setTimeout(async () => {
+  doAsync(async () => {
     const user = await chorm.query.users.findFirst({
       where: (users, { eq }) => eq(users.id, createdUserId),
     });
@@ -22,7 +22,7 @@ export default async function () {
       username: "username",
       phone_number: "+1 1234567890",
     });
-  }, 5);
+  });
 
   // Multiple updates
   const multipleUpdatesQueryId = await chorm.query.users.update({
@@ -36,7 +36,7 @@ export default async function () {
 
   expect(multipleUpdatesQueryId).toBeDefined();
 
-  setTimeout(async () => {
+  doAsync(async () => {
     const multipleUpdatesUser = await chorm.query.users.findFirst({
       where: (users, { eq }) => eq(users.id, createdUserId),
     });
@@ -47,5 +47,5 @@ export default async function () {
       username: "changed username",
       phone_number: "+1 changed phon number",
     });
-  }, 5);
+  });
 }

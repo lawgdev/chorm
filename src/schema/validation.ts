@@ -33,14 +33,12 @@ export enum DATA_TYPE {
   IPv6 = "IPv6",
   LowCardinality = "LowCardinality",
   Map = "Map",
-  Nothing = "Nothing",
   Point = "Point",
   Ring = "Ring",
   Polygon = "Polygon",
   MultiPolygon = "MultiPolygon",
 
   // TODO: support these types
-  Nullable = "Nullable",
   Nested = "Nested",
   Tuple = "Tuple",
   SimpleAggregateFunction = "SimpleAggregateFunction",

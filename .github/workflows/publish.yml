@@ -5,6 +5,20 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    container: node:18-alpine
+    env:
+      CLICKHOUSE_URL: http://clickhouse:8123
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server
+        env:
+          CLICKHOUSE_DB: default
+          CLICKHOUSE_USER: default
+          CLICKHOUSE_PASSWORD: password
+        ports:
+          - 8123:8123
+          - 9000:9000
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3

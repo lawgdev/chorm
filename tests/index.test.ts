@@ -9,6 +9,7 @@ import getUser from "./query/getUser";
 import updateUser from "./query/updateUser";
 import { testSchemas } from "./testSchemas";
 import parseQuery from "./utils/parseQuery";
+import "dotenv/config";
 
 export function doAsync(c: () => void) {
   setTimeout(c, 1000);
@@ -16,9 +17,11 @@ export function doAsync(c: () => void) {
 
 export let chorm: ClickHouse<typeof testSchemas>;
 
+const CLICKHOUSE_HOST = process.env.CLICKHOUSE_URL ?? "http://localhost:8123";
+
 beforeAll(async () => {
   chorm = new ClickHouse({
-    host: "http://localhost:8123",
+    host: CLICKHOUSE_HOST,
     username: "default",
     password: "password",
     schemas: testSchemas,

@@ -26,9 +26,10 @@ export class Query<T extends Table> {
   }
 
   public async findFirst(params: GenericParams<T>) {
-    const { template, query_params } = parseQuery(params.where(this.table.columns, conditions));
+    const { template, queryParams: query_params } = parseQuery(
+      params.where(this.table.columns, conditions),
+    );
 
-    console.log(template, query_params);
     const queriedData = await this.client.query({
       query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${template} LIMIT 1`,
       query_params,
@@ -40,7 +41,9 @@ export class Query<T extends Table> {
   }
 
   public async findMany(params: GenericParams<T>) {
-    const { template, query_params } = parseQuery(params.where(this.table.columns, conditions));
+    const { template, queryParams: query_params } = parseQuery(
+      params.where(this.table.columns, conditions),
+    );
 
     const queriedData = await this.client.query({
       query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${template}`,
@@ -86,7 +89,9 @@ export class Query<T extends Table> {
 
   // Todo: allow user to specify if they want to do a "lightweight" or a "hard" delete
   public async delete(params: GenericParams<T>) {
-    const { template, query_params } = parseQuery(params.where(this.table.columns, conditions));
+    const { template, queryParams: query_params } = parseQuery(
+      params.where(this.table.columns, conditions),
+    );
 
     const queriedData = await this.client.query({
       query: `ALTER TABLE ${this.database}.${this.table.name} DELETE WHERE ${template}`,
@@ -101,7 +106,9 @@ export class Query<T extends Table> {
       data: Partial<ExtractPropsFromTable<T>>;
     },
   ) {
-    const { template, query_params } = parseQuery(params.where(this.table.columns, conditions));
+    const { template, queryParams: query_params } = parseQuery(
+      params.where(this.table.columns, conditions),
+    );
     const updateExpressions = Object.entries(params.data).map(([key, value]) => {
       const column = this.table.columns[key];
       return parseQuery(sql`${column} = ${value}`, column?.name);
@@ -113,7 +120,10 @@ export class Query<T extends Table> {
         .join(", ")} WHERE ${template}`,
       query_params: {
         ...query_params,
-        ...updateExpressions.reduce((acc, { query_params }) => ({ ...acc, ...query_params }), {}),
+        ...updateExpressions.reduce(
+          (acc, { queryParams: query_params }) => ({ ...acc, ...query_params }),
+          {},
+        ),
       },
     });
 

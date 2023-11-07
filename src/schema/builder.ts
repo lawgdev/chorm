@@ -9,11 +9,10 @@ type ColumnBuilderOptions<T = unknown> = {
 export class ColumnBuilder<T = unknown, R extends boolean = false> {
   public readonly name: string;
   public readonly type: DATA_TYPE;
+  public readonly value: T | null;
+  public readonly table?: string;
   public isPrimaryKey = false;
   public isNotNull = false;
-  public value: T | null;
-  public table?: string;
-
   public defaultValue: T | null = null;
 
   constructor(options: ColumnBuilderOptions<T>) {
@@ -39,9 +38,5 @@ export class ColumnBuilder<T = unknown, R extends boolean = false> {
 
   $type<U>(): ColumnBuilder<U, R> {
     return this as unknown as ColumnBuilder<U, R>;
-  }
-
-  references(_ref: () => ColumnBuilder): this {
-    return this;
   }
 }

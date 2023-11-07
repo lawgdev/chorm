@@ -1,5 +1,5 @@
 import { ColumnBuilder } from "../schema/builder";
-import { DATA_TYPE } from "../schema/validation";
+import { convertValueToString, parseFullColumnType } from "./helpers";
 import { SQLParser } from "./sql";
 
 export function validateParam(obj: { [x: string]: string }) {
@@ -10,7 +10,7 @@ export function parseQuery(sqlParser: SQLParser, prefixer?: string) {
   const { rawQuery, rawArguments } = sqlParser;
   const params: Record<string, any> = {};
 
-  let columnType: DATA_TYPE;
+  let columnType: string;
   let argIndex = 0;
   const template = rawQuery.reduce((acc, current) => {
     if (current.trim() !== "") {
@@ -19,7 +19,9 @@ export function parseQuery(sqlParser: SQLParser, prefixer?: string) {
 
     const arg = rawArguments[argIndex];
     if (arg instanceof ColumnBuilder) {
-      columnType = arg.type;
+      columnType = !arg.value
+        ? arg.type
+        : `${arg.type}(${convertValueToString(arg.type, arg.value)})}`;
       argIndex++;
 
       return acc + arg.name;
@@ -34,7 +36,7 @@ export function parseQuery(sqlParser: SQLParser, prefixer?: string) {
 
   return {
     template,
-    query_params: params,
+    queryParams: params,
   };
 }
 
@@ -43,7 +45,7 @@ export function parseValues(...values: Array<{ column: ColumnBuilder; value: any
   const template = values.reduce((acc, valuePartial, index) => {
     const { column, value } = valuePartial;
     const key = `v${index}`;
-    const columnType = column.isNotNull ? column.type : `Nullable(${column.type})`;
+    const columnType = parseFullColumnType(column);
 
     params[key] = value;
     return acc + (index === 0 ? "" : ", ") + `{${key}: ${columnType}}`;

@@ -8,6 +8,7 @@ export default async function () {
   });
 
   expect(user).toStrictEqual({
+    emails: ["cody@hop.io"],
     id: createdUserId,
     password: "password",
     username: "username",

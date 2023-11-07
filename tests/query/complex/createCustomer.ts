@@ -17,6 +17,7 @@ export default async function () {
     customer_name: "John Doe",
     uuid,
     pi: 3.14,
+    array: ["hello bereketity", "you smell"],
   });
 
   expect(customerQueryId).toBeDefined();
@@ -35,6 +36,7 @@ export default async function () {
     customer_name: "John Doe",
     uuid: uuid,
     pi: 3.14,
+    array: ["hello bereketity", "you smell"],
   });
 
   createdCustomer = customer!;

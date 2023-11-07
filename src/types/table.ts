@@ -14,3 +14,7 @@ export type ColumnsFromTable<T extends Table> = T extends Table<infer U>
 export type ExtractTypeFromColumn<T extends ColumnBuilder> = T extends ColumnBuilder<infer U>
   ? U
   : never;
+
+export type ArrayColumnBuilder<T extends ColumnBuilder> = T extends ColumnBuilder<infer U, infer R>
+  ? ColumnBuilder<U[], R>
+  : never;

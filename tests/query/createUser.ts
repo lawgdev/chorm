@@ -10,6 +10,7 @@ export default async function () {
     password: "password",
     username: "username",
     phone_number: "+1 1234567890",
+    emails: ["cody@hop.io"],
   });
 
   expect(queryId).toBeDefined();

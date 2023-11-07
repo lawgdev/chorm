@@ -1,5 +1,5 @@
 import type { ColumnBuilder } from "../schema/builder";
-import type { ExtractTypeFromColumn } from "../types/table";
+import type { ArrayColumnBuilder, ExtractTypeFromColumn } from "../types/table";
 import { SQLParser, sql } from "../utils/sql";
 
 export function eq<T extends ColumnBuilder = ColumnBuilder>(
@@ -52,34 +52,18 @@ export function isNotNull<T extends ColumnBuilder = ColumnBuilder>(column: T) {
   return sql`${column} IS NOT NULL`;
 }
 
-export function inArray<T extends ColumnBuilder = ColumnBuilder>(
+export function inArray<T extends ArrayColumnBuilder<ColumnBuilder>>(
   column: T,
-  values: ExtractTypeFromColumn<T>[],
+  value: ExtractTypeFromColumn<T>[number],
 ) {
-  return sql`${column} IN (${values})`;
+  return sql`has(${column}, ${value})`;
 }
 
-export function notInArray<T extends ColumnBuilder = ColumnBuilder>(
+export function notInArray<T extends ArrayColumnBuilder<ColumnBuilder>>(
   column: T,
-  values: ExtractTypeFromColumn<T>[],
+  value: ExtractTypeFromColumn<T>[number],
 ) {
-  return sql`${column} NOT IN (${values})`;
-}
-
-export function between<T extends ColumnBuilder = ColumnBuilder>(
-  column: T,
-  minValue: ExtractTypeFromColumn<T>,
-  maxValue: ExtractTypeFromColumn<T>,
-) {
-  return sql`${column} BETWEEN ${minValue} AND ${maxValue}`;
-}
-
-export function notBetween<T extends ColumnBuilder = ColumnBuilder>(
-  column: T,
-  minValue: ExtractTypeFromColumn<T>,
-  maxValue: ExtractTypeFromColumn<T>,
-) {
-  return sql`${column} NOT BETWEEN ${minValue} AND ${maxValue}`;
+  return sql`${column} NOT IN (${value})`;
 }
 
 export function like<T extends ColumnBuilder = ColumnBuilder>(column: T, pattern: string) {
@@ -120,9 +104,9 @@ export function or(...expressions: SQLParser[]) {
   return combineExpressions("OR", ...expressions);
 }
 
-export function arrayContains<T extends ColumnBuilder = ColumnBuilder>(
+export function arrayContains<T extends ArrayColumnBuilder<ColumnBuilder>>(
   column: T,
-  values: ExtractTypeFromColumn<T>[],
+  values: ExtractTypeFromColumn<T>[number],
 ) {
   return sql`${column} @> ARRAY[${values}]`;
 }

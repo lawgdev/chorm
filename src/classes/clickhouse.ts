@@ -1,10 +1,9 @@
 import { createClient as internalCHClient } from "@clickhouse/client";
-import { EnumKeys, EnumValue } from "../types/helpers";
+import Migration from "../cli/lib/migration";
 import type { Table } from "../types/table";
-import { convertEnumToString } from "../utils/helpers";
+import { convertValueToString } from "../utils/helpers";
 import { Logger } from "../utils/logger";
 import { Query } from "./query";
-import Migration from "../cli/lib/migration";
 
 type Options<T extends Record<string, Record<string, unknown>>> = Parameters<
   typeof internalCHClient
@@ -53,9 +52,7 @@ export default class ClickHouse<T extends Record<string, Table>> {
       for (const [_objName, table] of Object.entries(this.options.schemas)) {
         const columns = Object.entries(table.columns).map(([_key, column]) => {
           const columnValue = `${column.type}${
-            column.value
-              ? `(${convertEnumToString(column.value as Record<EnumKeys, EnumValue>)})`
-              : ""
+            column.value ? `(${convertValueToString(column.type, column.value)})` : ""
           }`;
 
           return `${column.name} ${column.isNotNull ? columnValue : `Nullable(${columnValue})`}`;

@@ -1,6 +1,4 @@
-import { boolean, date, float, integer, table, text, uuid } from "../src";
 import ClickHouse from "../src/classes/clickhouse";
-import { DATA_TYPE } from "../src/schema/validation";
 import checkProperties from "./client/checkProperties";
 import defined from "./client/defined";
 import createCustomer from "./query/complex/createCustomer";
@@ -9,31 +7,8 @@ import createUser from "./query/createUser";
 import deleteUser from "./query/deleteUser";
 import getUser from "./query/getUser";
 import updateUser from "./query/updateUser";
-
-export enum Test {
-  A,
-  B,
-  C,
-}
-
-export const testSchemas = {
-  users: table("users", {
-    id: text("id").primaryKey().notNull(),
-    username: text("username").notNull(),
-    password: text("password").notNull(),
-    phone_number: text("phone_number").$type<`+1 ${string}`>(),
-  }),
-  customers: table("customers", {
-    id: text("id").primaryKey().notNull(),
-    customer_name: text("customer_name").notNull(),
-    is_admin: boolean("is_admin").notNull().default(false),
-    created_at: date("created_at", { type: DATA_TYPE.DateTime64 }).notNull(),
-    pi: float("pi", { type: DATA_TYPE.Float32 }).notNull().default(3.14),
-    card_number: integer("card_number", { type: DATA_TYPE.Int32 }).notNull(),
-    uuid: uuid("uuid").notNull(),
-    null_column: text("null_column"),
-  }),
-};
+import { testSchemas } from "./testSchemas";
+import parseQuery from "./utils/parseQuery";
 
 export function doAsync(c: () => void) {
   setTimeout(c, 1000);
@@ -67,6 +42,8 @@ afterAll(async () => {
 });
 
 describe("Test chorm", () => {
+  /* parseQuery validation */
+  it("should test parseQuery", parseQuery);
   /* Client */
   it("should be defined", defined);
   it("should have all schemas in .query", checkProperties);

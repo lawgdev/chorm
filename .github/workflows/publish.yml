@@ -47,6 +47,7 @@ jobs:
         with:
           publish: yarn release
         env:
+          GH_TOKEN: ${{ secrets.GH_ACTION }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit changes

@@ -39,9 +39,6 @@ jobs:
       - name: Test
         run: yarn test
 
-      - name: Check we have changesets since main
-        run: yarn changeset status --since=origin/main
-
       - name: Bump version
         run: yarn changeset version
 

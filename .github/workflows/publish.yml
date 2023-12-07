@@ -5,6 +5,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    container: node:20-buster
     env:
       CLICKHOUSE_URL: http://clickhouse:8123
     services:
@@ -20,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v1
         with:
           fetch-depth: 0
 

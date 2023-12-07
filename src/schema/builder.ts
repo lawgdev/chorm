@@ -6,7 +6,7 @@ type ColumnBuilderOptions<T = unknown> = {
   value?: T;
 };
 
-export class ColumnBuilder<T = unknown, R extends boolean = false> {
+export class ColumnBuilder<T = unknown, R extends boolean = false, D = false> {
   public readonly name: string;
   public readonly type: DATA_TYPE;
   public readonly value: T | null;
@@ -21,14 +21,14 @@ export class ColumnBuilder<T = unknown, R extends boolean = false> {
     this.value = options.value ?? null;
   }
 
-  default(value: T): this {
+  default(value: T): ColumnBuilder<T, R, true> {
     this.defaultValue = value;
-    return this;
+    return this as ColumnBuilder<T, R, true>;
   }
 
   notNull(): ColumnBuilder<T, true> {
     this.isNotNull = true;
-    return this as ColumnBuilder<T, true>;
+    return this as ColumnBuilder<T, true, D>;
   }
 
   primaryKey(): this {
@@ -37,6 +37,6 @@ export class ColumnBuilder<T = unknown, R extends boolean = false> {
   }
 
   $type<U>(): ColumnBuilder<U, R> {
-    return this as unknown as ColumnBuilder<U, R>;
+    return this as unknown as ColumnBuilder<U, R, D>;
   }
 }

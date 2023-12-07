@@ -6,6 +6,9 @@ import getCustomer from "./query/complex/getCustomer";
 import createUser from "./query/createUser";
 import deleteUser from "./query/deleteUser";
 import getUser from "./query/getUser";
+import limit from "./query/limit";
+import offset from "./query/offset";
+import ordering from "./query/ordering";
 import updateUser from "./query/updateUser";
 import { testSchemas } from "./testSchemas";
 import parseQuery from "./utils/parseQuery";
@@ -50,6 +53,11 @@ describe("Test chorm", () => {
   /* Client */
   it("should be defined", defined);
   it("should have all schemas in .query", checkProperties);
+
+  /* Check Ordering */
+  it("should check ordering", ordering);
+  it("should check limit", limit);
+  it("should check offset", offset);
 
   /* Query */
   it("should create a user", createUser);

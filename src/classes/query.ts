@@ -1,6 +1,6 @@
 import type { QueryParams } from "@clickhouse/client";
 import type { Client } from ".";
-import { AllExpressions } from "../expressions";
+import { AllExpressions, OrderByExpression } from "../expressions";
 import * as conditions from "../expressions/conditions";
 import { ColumnBuilder } from "../schema/builder";
 import { ClickhouseJSONResponse, ExtractPropsFromTable } from "../types/clickhouse";
@@ -11,7 +11,9 @@ import { SQLParser, sql } from "../utils/sql";
 
 type GenericParams<T extends Table> = {
   where: (columns: T["columns"], conditions: AllExpressions) => SQLParser;
-  orderBy?: (columns: T["columns"], conditions: AllExpressions) => string;
+  orderBy?: (columns: T["columns"], conditions: OrderByExpression) => string;
+  limit?: number;
+  offset?: number;
 };
 
 export class Query<T extends Table> {
@@ -25,13 +27,20 @@ export class Query<T extends Table> {
     this.table = table;
   }
 
-  public async findFirst(params: GenericParams<T>) {
+  public async findFirst(params: Omit<GenericParams<T>, "limit">) {
     const { template, queryParams: query_params } = parseQuery(
       params.where(this.table.columns, conditions),
     );
 
     const queriedData = await this.client.query({
-      query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${template} LIMIT 1`,
+      query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${template} ${
+        params.orderBy
+          ? `ORDER BY ${params.orderBy(this.table.columns, {
+              asc: conditions.asc,
+              desc: conditions.desc,
+            })}`
+          : ""
+      } LIMIT 1 OFFSET ${params.offset ?? 0}`,
       query_params,
     });
 
@@ -46,7 +55,14 @@ export class Query<T extends Table> {
     );
 
     const queriedData = await this.client.query({
-      query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${template}`,
+      query: `SELECT * FROM ${this.database}.${this.table.name} WHERE ${template} ${
+        params.orderBy
+          ? `ORDER BY ${params.orderBy(this.table.columns, {
+              asc: conditions.asc,
+              desc: conditions.desc,
+            })}`
+          : ""
+      } LIMIT ${params.limit ?? 100} OFFSET ${params.offset ?? 0}`,
       query_params,
     });
 

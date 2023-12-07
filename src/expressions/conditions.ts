@@ -117,9 +117,9 @@ export function arrayOverlaps<T extends ColumnBuilder = ColumnBuilder>(column1: 
 
 // Order by
 export function asc<T extends ColumnBuilder = ColumnBuilder>(column: T) {
-  return sql`${column} ASC`;
+  return `${column.name} ASC`;
 }
 
 export function desc<T extends ColumnBuilder = ColumnBuilder>(column: T) {
-  return sql`${column} DESC`;
+  return `${column.name} DESC`;
 }

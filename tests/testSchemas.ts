@@ -27,4 +27,8 @@ export const testSchemas = {
     null_column: text("null_column"),
     array: array("array", { type: DATA_TYPE.String }).$type<string[]>().notNull(),
   }),
+  ordering: table("ordering", {
+    id: text("id").primaryKey().notNull(),
+    num: integer("num").notNull(),
+  }),
 };

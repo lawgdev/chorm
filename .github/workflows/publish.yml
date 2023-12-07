@@ -5,7 +5,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    container: ubuntu:20.04
+    container: ubuntu:latest
     env:
       CLICKHOUSE_URL: http://clickhouse:8123
     services:

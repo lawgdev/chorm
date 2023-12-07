@@ -13,8 +13,5 @@ export function ip(name: string, config: IPColumnConfig) {
   return new ColumnBuilder({
     name,
     type,
-    parser(value) {
-      return `'${value}'`;
-    },
   }).$type<string>();
 }

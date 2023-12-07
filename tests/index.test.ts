@@ -1,4 +1,4 @@
-import ClickHouse from "../src/classes/clickhouse";
+import { ClickHouse } from "../src/classes/clickhouse";
 import checkProperties from "./client/checkProperties";
 import defined from "./client/defined";
 import createCustomer from "./query/complex/createCustomer";

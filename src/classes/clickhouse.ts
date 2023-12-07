@@ -19,7 +19,7 @@ type Queries<T extends Record<string, Table>> = {
   [K in keyof T]: Query<T[K]>;
 };
 
-export default class ClickHouse<T extends Record<string, Table>> {
+export class ClickHouse<T extends Record<string, Table>> {
   public readonly client: Client;
   private readonly options: Options<T>;
 

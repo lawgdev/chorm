@@ -8,9 +8,6 @@
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
   },
-  "bin": {
-    "chorm": "./dist/cli/index.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lawgdev/chorm.git"

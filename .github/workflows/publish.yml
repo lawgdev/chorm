@@ -5,7 +5,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: ubuntu:latest
+    container: node:20-buster
     env:
       CLICKHOUSE_URL: http://clickhouse:8123
     services:
@@ -66,7 +66,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_ACTION }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit changes
         continue-on-error: true
@@ -75,4 +74,4 @@ jobs:
           git config --global user.name "lawg"
           git add .
           git commit -m "Bump version"
-          git push -u --set-upstream origin master --force
+          git push -u --set-upstream origin main --force

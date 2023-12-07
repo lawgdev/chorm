@@ -23,7 +23,7 @@
     "lint": "prettier --write src",
     "prettier-write": "prettier --write src",
     "test": "jest --forceExit",
-    "release": "yarn changeset publish --access public"
+    "release": "yarn changeset publish"
   },
   "dependencies": {
     "@clickhouse/client": "^0.2.5",
@@ -60,5 +60,8 @@
     "clickhouse",
     "orm",
     "typescript"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

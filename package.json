@@ -23,7 +23,7 @@
     "lint": "prettier --write src",
     "prettier-write": "prettier --write src",
     "test": "jest --forceExit",
-    "release": "yarn build && yarn changeset publish"
+    "release": "yarn changeset publish --access public"
   },
   "dependencies": {
     "@clickhouse/client": "^0.2.5",
